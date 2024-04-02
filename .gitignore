@@ -23,6 +23,10 @@
 hs_err_pid*
 replay_pid*
 
+# running files
+*.bat
+
 /FinalProject/src/tage/*
 /FinalProject/bin/*
 /FinalProject/src/assets/*
+.vscode/settings.json
