@@ -36,12 +36,16 @@ public class MyGame extends VariableFrameRateGame{
     private ProtocolType serverProtocol;
     private ProtocolClient protClient;
     private boolean isClientConneted = false;
+    private boolean isSinglePlayer = true;
 
+
+    // constructor for if in multiplayer
     public MyGame(String serverAddress, int serverPort, String protocol){
         super();
         gm = new GhostManager(this);
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
+        isSinglePlayer = false;
         if(protocol.compareToIgnoreCase("TCP") == 0){
             this.serverProtocol = ProtocolType.TCP;
         }else{
@@ -49,9 +53,19 @@ public class MyGame extends VariableFrameRateGame{
         }
 
     }
+    // constructor for if in singleplayer
+    public MyGame(){
+        super();
+        isSinglePlayer = true;
+    }
 
     public static void main(String[] args){
-        MyGame game = new MyGame(args[0], Integer.parseInt((args[1])), args[2]);
+        MyGame game;
+        if(args.length > 0){
+            game = new MyGame(args[0], Integer.parseInt((args[1])), args[2]);
+        }else{
+            game = new MyGame();
+        }
         engine = new Engine(game);
         game.initializeSystem();
         game.game_loop();

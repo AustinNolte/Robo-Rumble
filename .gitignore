@@ -26,6 +26,9 @@ replay_pid*
 # running files
 *.bat
 
+# terragen files
+*.tgd
+
 /FinalProject/src/tage/*
 /FinalProject/bin/*
 /FinalProject/src/assets/*
