@@ -2,10 +2,10 @@ package WizardGame;
 
 import tage.*;
 import tage.input.InputManager;
+import tage.networking.IGameConnection.ProtocolType;
 import tage.shapes.*;
 import org.joml.*;
 
-import net.java.games.input.Keyboard;
 
 public class MyGame extends VariableFrameRateGame{
     
@@ -21,23 +21,49 @@ public class MyGame extends VariableFrameRateGame{
     private boolean isStaminaZero;
     private float stamina = 100.0f;
     private int speed = 1;
+
+    //pointer for skybox textures
+    private int customSkyBox;
     
     private CameraOrbit3D mainCamController;
 
 
     private static Engine engine;
+    private GhostManager gm;
 
-    public MyGame(){
+    private String serverAddress;
+    private int serverPort;
+    private ProtocolType serverProtocol;
+    private ProtocolClient protClient;
+    private boolean isClientConneted = false;
+
+    public MyGame(String serverAddress, int serverPort, String protocol){
         super();
+        gm = new GhostManager(this);
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        if(protocol.compareToIgnoreCase("TCP") == 0){
+            this.serverProtocol = ProtocolType.TCP;
+        }else{
+            this.serverProtocol = ProtocolType.UDP;
+        }
+
     }
 
     public static void main(String[] args){
-        MyGame game = new MyGame();
+        MyGame game = new MyGame(args[0], Integer.parseInt((args[1])), args[2]);
         engine = new Engine(game);
         game.initializeSystem();
         game.game_loop();
     }
-
+    
+    @Override
+    public void loadSkyBoxes(){
+        customSkyBox = (engine.getSceneGraph()).loadCubeMap("customSkybox");
+        (engine.getSceneGraph()).setActiveSkyBoxTexture(customSkyBox);
+        (engine.getSceneGraph()).setSkyBoxEnabled(true);
+    }
+    
     @Override
     public void createViewports(){
         // ----------- remaking main viewport --------- 
@@ -186,5 +212,9 @@ public class MyGame extends VariableFrameRateGame{
     }
     public int getSpeed(){
         return speed;
+    }
+
+    public GhostManager getGhostManager() {
+        return this.gm;
     }
 }

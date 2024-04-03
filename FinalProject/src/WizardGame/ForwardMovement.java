@@ -16,7 +16,6 @@ public class ForwardMovement extends AbstractInputAction{
 
     @Override
     public void performAction(float time, Event evt){
-        System.out.println("here");
         Vector3f oldLocVec, forwardVec, newLocVec;
 
         // multiplying by -1 because -1 is forward on stick and +1 is backwards
