@@ -32,4 +32,5 @@ replay_pid*
 /FinalProject/src/tage/*
 /FinalProject/bin/*
 /FinalProject/src/assets/*
+/FinalProject/src/Server/tage/*
 .vscode/settings.json

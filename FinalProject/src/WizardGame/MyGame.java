@@ -4,11 +4,18 @@ import tage.*;
 import tage.input.InputManager;
 import tage.networking.IGameConnection.ProtocolType;
 import tage.shapes.*;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.joml.*;
 
 
 public class MyGame extends VariableFrameRateGame{
-    
+
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X
     private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS;
     private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj;
@@ -53,7 +60,7 @@ public class MyGame extends VariableFrameRateGame{
         }
 
     }
-    // constructor for if in singleplayer
+    // constructor for if in singleplayer and not given any ip or ports in args
     public MyGame(){
         super();
         isSinglePlayer = true;
@@ -145,11 +152,14 @@ public class MyGame extends VariableFrameRateGame{
         elapsedTime = 0.0f;
 
         (engine.getRenderSystem()).setWindowDimensions(1280,720);
+
+        // ------ setting up networking before making input objects etc -----------
+        setupNetworking();
         
         // ----------- Setting up input objects -----------
-        ForwardMovement FM = new ForwardMovement(this);
+        ForwardMovement FM = new ForwardMovement(this,protClient);
         GameSettingAction GSA = new GameSettingAction(this);
-        StrafingMovement SM = new StrafingMovement(this);
+        StrafingMovement SM = new StrafingMovement(this,protClient);
 
         // ------------- setting up camera controller ----------- 
 		Camera mainCam = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
@@ -169,6 +179,8 @@ public class MyGame extends VariableFrameRateGame{
         engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+        
 
 
     }
@@ -212,6 +224,7 @@ public class MyGame extends VariableFrameRateGame{
 				isStaminaZero = false;
 			}
 		}
+        processNetworking((float)elapsedTime);
     }
     
     public GameObject getAvatar(){
@@ -230,5 +243,49 @@ public class MyGame extends VariableFrameRateGame{
 
     public GhostManager getGhostManager() {
         return this.gm;
+    }
+
+    public TextureImage getGhostTextureImage(){
+        return ghostAvX;
+    }
+
+    public ObjShape getGhostObjShape(){
+        return ghostAvS;
+    }
+
+    public Engine getEngine(){
+        return engine;
+    }
+
+    // ------------- Networking part ------------
+
+    public void setupNetworking(){
+        isClientConneted = false;
+
+        try{
+            protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
+        
+        }catch(UnknownHostException e){
+            e.printStackTrace();
+        
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        if(protClient == null){
+            System.out.println("missing protocol host");
+        }else{
+            System.out.println("sending join message");
+            protClient.sendJoinMessage();
+        }
+    }
+
+    protected void processNetworking(float elapsTime){
+        if(protClient != null){
+            protClient.processPackets();
+        }
+    }
+
+    public void setIsConnected(boolean isClientConnected){
+        this.isClientConneted = isClientConnected;
     }
 }

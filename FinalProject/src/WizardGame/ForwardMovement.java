@@ -8,9 +8,11 @@ import tage.input.action.AbstractInputAction;
 public class ForwardMovement extends AbstractInputAction{
     
     private MyGame myGame;
+    private ProtocolClient p;
 
-    public ForwardMovement(MyGame myGame){
+    public ForwardMovement(MyGame myGame, ProtocolClient p){
         this.myGame = myGame;
+        this.p = p;
     }
 
 
@@ -26,12 +28,14 @@ public class ForwardMovement extends AbstractInputAction{
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time));
             myGame.getAvatar().setLocalLocation(newLocVec);
+            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("S")){
             forwardVec = myGame.getAvatar().getLocalForwardVector();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(forwardVec.mul(-10*time));
             myGame.getAvatar().setLocalLocation(newLocVec);
+            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             
         // deadzoning 
         }else if(evtValue > .15f || evtValue < -.15f){
@@ -40,11 +44,13 @@ public class ForwardMovement extends AbstractInputAction{
                 oldLocVec = myGame.getAvatar().getWorldLocation();
                 newLocVec = oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time*evtValue));
                 myGame.getAvatar().setLocalLocation(newLocVec);
+                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }else{
                 forwardVec = myGame.getAvatar().getLocalForwardVector();
                 oldLocVec = myGame.getAvatar().getWorldLocation();
                 newLocVec = oldLocVec.add(forwardVec.mul(10*time));
                 myGame.getAvatar().setLocalLocation(newLocVec);
+                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }
         }
     }

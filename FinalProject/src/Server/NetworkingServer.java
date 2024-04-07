@@ -8,7 +8,7 @@ public class NetworkingServer
 	private GameServerUDP thisUDPServer;
 
 	public NetworkingServer(int serverPort, String protocol) {	
-		try{ 	
+		try{
 			thisUDPServer = new GameServerUDP(serverPort);
 		} catch (IOException e) {	
 			e.printStackTrace();
