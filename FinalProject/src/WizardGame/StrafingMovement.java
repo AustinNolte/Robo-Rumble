@@ -27,6 +27,8 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = myGame.getAvatar().getLocalRightVector();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(rightVec.mul(10*time));
+            // accounting for terrain
+            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
@@ -34,6 +36,8 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = myGame.getAvatar().getLocalRightVector();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(rightVec.mul(-10*time));
+            // accounting for terrain
+            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         
@@ -42,6 +46,8 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = myGame.getAvatar().getLocalRightVector();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(rightVec.mul(10*evtValue*time));
+            // accounting for terrain
+            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());;
         }

@@ -11,15 +11,19 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.lang.Math;
+
 import org.joml.*;
 
 
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS;
-    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj;
-    private TextureImage ghostAvX,pAvX;
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,terrainS;
+    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,terrain;
+    private TextureImage ghostAvX,pAvX,terrainX,terrainHeightMap;
+    
+    
     private Light light1;
     private boolean isSprinting = false;
 
@@ -93,42 +97,62 @@ public class MyGame extends VariableFrameRateGame{
 
     @Override
     public void loadShapes() {
-        pAvS = new Cube();
+        pAvS = new ImportedModel("robot.obj");
         ghostAvS = new Cube();
         xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
         yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
-        zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));     
+        zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));  
+        terrainS = new TerrainPlane(1000);   
     }
 
     @Override
     public void loadTextures() {
-        pAvX = new TextureImage("CustomTexture1 - Cracked red bricks.png");
+        pAvX = new TextureImage("robot.png");
         ghostAvX = new TextureImage("CustomTexture2 - Camoflage.png");
+        terrainX = new TextureImage("test2.png");
+        terrainHeightMap = new TextureImage("test.png");
     }
 
     @Override
     public void buildObjects() {
-        Matrix4f initTranslation,initScale;
+        Matrix4f initTranslation,initScale,initRot;
         
         initTranslation = new Matrix4f().identity();
 		initScale = new Matrix4f().identity();
 
         //making x,y,z axis
 		xAxisObj = new GameObject(GameObject.root(),xAxisS);
-		initTranslation = new Matrix4f().translation(0,2,0);
+        xAxisObj.getRenderStates().setColor(new Vector3f(1,0,0));
 
+        
 		yAxisObj = new GameObject(GameObject.root(),yAxisS);
 		yAxisObj.getRenderStates().setColor(new Vector3f(0,1,0));
-
+        
 		zAxisObj = new GameObject(GameObject.root(),zAxisS);
 		zAxisObj.getRenderStates().setColor(new Vector3f(0,0,1));
-
+        
         //making temp player obj
         pAvObj = new GameObject(GameObject.root(), pAvS, pAvX);
         initTranslation = new Matrix4f().translation(0,1.25f,0);
 		initScale = new Matrix4f().scale(.5f);
 		pAvObj.setLocalTranslation(initTranslation);
 		pAvObj.setLocalScale(initScale);
+        initRot = new Matrix4f().identity();
+        initRot.rotate((float)Math.toRadians(90), 1,0,0);
+        pAvObj.getRenderStates().setModelOrientationCorrection(initRot);
+        
+        
+        // making terrain
+        terrain = new GameObject(GameObject.root(),terrainS,terrainX);
+        initTranslation = new Matrix4f().translation(0,0,0);
+        terrain.setLocalTranslation(initTranslation);
+        initScale = new Matrix4f().scale(100,5,100);
+        terrain.setLocalScale(initScale);
+        terrain.setHeightMap(terrainHeightMap);
+
+        // tilling terrain
+        terrain.getRenderStates().setTiling(1);
+        terrain.getRenderStates().setTileFactor(10);
     }
 
     @Override
@@ -263,6 +287,10 @@ public class MyGame extends VariableFrameRateGame{
 
     public Vector3f getCamerU(){
         return mainCamController.getCameraU();
+    }
+    
+    public float getTerrainHeight(float x, float z){
+        return terrain.getHeight(x, z);
     }
 
     // ------------- Networking part ------------
