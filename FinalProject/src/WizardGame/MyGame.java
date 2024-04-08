@@ -257,6 +257,14 @@ public class MyGame extends VariableFrameRateGame{
         return engine;
     }
 
+    public Vector3f getCameraN(){
+        return mainCamController.getCameraN();
+    }
+
+    public Vector3f getCamerU(){
+        return mainCamController.getCameraU();
+    }
+
     // ------------- Networking part ------------
 
     public void setupNetworking(){

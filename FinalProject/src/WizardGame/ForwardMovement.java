@@ -20,6 +20,7 @@ public class ForwardMovement extends AbstractInputAction{
     public void performAction(float time, Event evt){
         Vector3f oldLocVec, forwardVec, newLocVec;
 
+
         // multiplying by -1 because -1 is forward on stick and +1 is backwards
         float evtValue = evt.getValue()*-1;
         
@@ -48,7 +49,7 @@ public class ForwardMovement extends AbstractInputAction{
             }else{
                 forwardVec = myGame.getAvatar().getLocalForwardVector();
                 oldLocVec = myGame.getAvatar().getWorldLocation();
-                newLocVec = oldLocVec.add(forwardVec.mul(10*time));
+                newLocVec = oldLocVec.add(forwardVec.mul(10*time*evtValue));
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }

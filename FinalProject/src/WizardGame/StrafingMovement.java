@@ -21,8 +21,7 @@ public class StrafingMovement extends AbstractInputAction{
         
         Vector3f oldLocVec, rightVec, newLocVec;
         
-        // multiplying by -1 because -1 is forward on stick and +1 is backwards
-        float evtValue = evt.getValue()*-1;
+        float evtValue = evt.getValue();
         
         if(evt.getComponent().toString().equalsIgnoreCase("D")){
             rightVec = myGame.getAvatar().getLocalRightVector();
@@ -39,7 +38,7 @@ public class StrafingMovement extends AbstractInputAction{
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         
         //deadzoning 
-        }else if(evtValue > .15f || evtValue < .15f){
+        }else if(evtValue > .15f || evtValue < -.15f){
             rightVec = myGame.getAvatar().getLocalRightVector();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = oldLocVec.add(rightVec.mul(10*evtValue*time));
