@@ -24,18 +24,20 @@ public class StrafingMovement extends AbstractInputAction{
         float evtValue = evt.getValue();
         
         if(evt.getComponent().toString().equalsIgnoreCase("D")){
-            rightVec = myGame.getAvatar().getLocalRightVector();
+            // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
+            rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = oldLocVec.add(rightVec.mul(10*time));
+            newLocVec = (oldLocVec.add(rightVec.mul(10*time)));
             // accounting for terrain
             newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("A")){
-            rightVec = myGame.getAvatar().getLocalRightVector();
+            // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
+            rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = oldLocVec.add(rightVec.mul(-10*time));
+            newLocVec = (oldLocVec.add(rightVec.mul(-10*time)));
             // accounting for terrain
             newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
@@ -43,9 +45,10 @@ public class StrafingMovement extends AbstractInputAction{
         
         //deadzoning 
         }else if(evtValue > .15f || evtValue < -.15f){
-            rightVec = myGame.getAvatar().getLocalRightVector();
+            // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
+            rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = oldLocVec.add(rightVec.mul(10*evtValue*time));
+            newLocVec = (oldLocVec.add(rightVec.mul(10*evtValue*time)));
             // accounting for terrain
             newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);

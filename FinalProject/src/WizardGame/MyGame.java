@@ -285,7 +285,7 @@ public class MyGame extends VariableFrameRateGame{
         return mainCamController.getCameraN();
     }
 
-    public Vector3f getCamerU(){
+    public Vector3f getCameraU(){
         return mainCamController.getCameraU();
     }
     

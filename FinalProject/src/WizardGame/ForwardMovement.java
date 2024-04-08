@@ -25,18 +25,20 @@ public class ForwardMovement extends AbstractInputAction{
         float evtValue = evt.getValue()*-1;
         
         if(evt.getComponent().toString().equalsIgnoreCase("W")){
-            forwardVec = myGame.getAvatar().getLocalForwardVector();
+            // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
+            forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time));
+            newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time)));
             // accounting for terrain
             newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("S")){
-            forwardVec = myGame.getAvatar().getLocalForwardVector();
+            // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
+            forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = oldLocVec.add(forwardVec.mul(-10*time));
+            newLocVec = (oldLocVec.add(forwardVec.mul(-10*time)));
             // accounting for terrain
             newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
             myGame.getAvatar().setLocalLocation(newLocVec);
@@ -45,17 +47,19 @@ public class ForwardMovement extends AbstractInputAction{
         // deadzoning 
         }else if(evtValue > .15f || evtValue < -.15f){
             if(evtValue > .95f){
-                forwardVec = myGame.getAvatar().getLocalForwardVector();
+                // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
+                forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
                 oldLocVec = myGame.getAvatar().getWorldLocation();
-                newLocVec = oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time*evtValue));
+                newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time*evtValue)));
                 // accounting for terrain
                 newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }else{
-                forwardVec = myGame.getAvatar().getLocalForwardVector();
+                // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
+                forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
                 oldLocVec = myGame.getAvatar().getWorldLocation();
-                newLocVec = oldLocVec.add(forwardVec.mul(10*time*evtValue));
+                newLocVec = (oldLocVec.add(forwardVec.mul(10*time*evtValue)));
                 // accounting for terrain
                 newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
                 myGame.getAvatar().setLocalLocation(newLocVec);
