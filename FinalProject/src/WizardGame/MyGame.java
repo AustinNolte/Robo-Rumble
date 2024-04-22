@@ -167,7 +167,7 @@ public class MyGame extends VariableFrameRateGame{
         // making first set of staris
         stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
         initTranslation = new Matrix4f().translation(10,1.75f,10);
-        initScale = new Matrix4f().scale(1,1,1);
+        initScale = new Matrix4f().scale(10,10,10);
         stairs1.setLocalTranslation(initTranslation);
         stairs1.setLocalScale(initScale);
         stairs1.setHeightMap(stairsHeightMap);

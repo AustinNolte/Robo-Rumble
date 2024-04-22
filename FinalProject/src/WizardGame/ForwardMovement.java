@@ -32,8 +32,7 @@ public class ForwardMovement extends AbstractInputAction{
             forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
             angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time)));
-            System.out.println(Math.toDegrees(angleSigned));
+            newLocVec = (oldLocVec.add((forwardVec.mul(time*myGame.getSpeed()*.25f)).normalize()));
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
                 y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
@@ -50,10 +49,9 @@ public class ForwardMovement extends AbstractInputAction{
         }else if(evt.getComponent().toString().equalsIgnoreCase("S")){
             // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
             forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
-            angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*time;
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = (oldLocVec.add(forwardVec.mul(-10*time)));
-            
+            angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*time;
+            newLocVec = (oldLocVec.add((forwardVec.mul(-time*.25f)).normalize()));
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
                 y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
@@ -62,9 +60,9 @@ public class ForwardMovement extends AbstractInputAction{
             }
             
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
-            
+
             myGame.getAvatar().setLocalLocation(newLocVec);
-            myGame.getAvatar().globalYaw(angleSigned*3);
+            myGame.getAvatar().globalYaw(angleSigned);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             
         // deadzoning 
@@ -74,7 +72,7 @@ public class ForwardMovement extends AbstractInputAction{
                 forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
                 angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
                 oldLocVec = myGame.getAvatar().getWorldLocation();
-                newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time*evtValue)));
+                newLocVec = (oldLocVec.add((forwardVec.mul(myGame.getSpeed()*time*evtValue*.25f).normalize())));
                 
                 // accounting for terrain or stairs
                 if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
@@ -92,7 +90,7 @@ public class ForwardMovement extends AbstractInputAction{
                 forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
                 angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
                 oldLocVec = myGame.getAvatar().getWorldLocation();
-                newLocVec = (oldLocVec.add(forwardVec.mul(10*time*evtValue)));
+                newLocVec = (oldLocVec.add((forwardVec.mul(time*evtValue*.25f)).normalize()));
                 // accounting for terrain or stairs
                 if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
                     y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
