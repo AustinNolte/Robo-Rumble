@@ -19,9 +19,9 @@ import org.joml.*;
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,terrainS;
-    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,terrain;
-    private TextureImage ghostAvX,pAvX,terrainX,terrainHeightMap;
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,terrainS,stairsS;
+    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,terrain,stairs1, stairs2;
+    private TextureImage ghostAvX,pAvX,terrainX,terrainHeightMap,stairsHeightMap,stairsX;
     
     
     private Light light1;
@@ -102,15 +102,21 @@ public class MyGame extends VariableFrameRateGame{
         xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
         yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
         zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));  
-        terrainS = new TerrainPlane(1000);   
+        terrainS = new TerrainPlane(1000);
+        stairsS = new TerrainPlane(1000);   
     }
 
     @Override
     public void loadTextures() {
+        
         pAvX = new TextureImage("robot.png");
         ghostAvX = new TextureImage("CustomTexture2 - Camoflage.png");
+        
         terrainX = new TextureImage("test2.png");
         terrainHeightMap = new TextureImage("test.png");
+
+        stairsX = new TextureImage("CustomTexture1 - Cracked bricks.png");
+        stairsHeightMap = new TextureImage("StairsheightMap.png");
     }
 
     @Override
@@ -153,6 +159,23 @@ public class MyGame extends VariableFrameRateGame{
         // tilling terrain
         terrain.getRenderStates().setTiling(1);
         terrain.getRenderStates().setTileFactor(10);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        initRot = new Matrix4f().identity();
+        
+        // making first set of staris
+        stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
+        initTranslation = new Matrix4f().translation(10,1.75f,10);
+        initScale = new Matrix4f().scale(1,1,1);
+        stairs1.setLocalTranslation(initTranslation);
+        stairs1.setLocalScale(initScale);
+        stairs1.setHeightMap(stairsHeightMap);
+        
+        //tilling stairs
+        stairs1.getRenderStates().setTiling(1);
+        stairs1.getRenderStates().setTileFactor(10);
+
     }
 
     @Override
@@ -222,6 +245,7 @@ public class MyGame extends VariableFrameRateGame{
 		//time between last frame and this frame in seconds
 		timeSinceLastFrame = (currFrameTime - lastFrameTime)/1000;   
         
+       // System.out.println(getStairs1Height(pAvObj.getLocalLocation().x, pAvObj.getLocalLocation().z));
         //updating camera and input manager
         engine.getInputManager().update((float)timeSinceLastFrame);
         mainCamController.updateCamera(); 
@@ -293,6 +317,13 @@ public class MyGame extends VariableFrameRateGame{
         return terrain.getHeight(x, z);
     }
 
+    public float getStairs1Height(float x, float z){
+        return stairs1.getHeight(x, z);
+    }
+
+    public float getStairs2Height(float x, float z){
+        return stairs2.getHeight(x, z);
+    }
     // ------------- Networking part ------------
 
     public void setupNetworking(){

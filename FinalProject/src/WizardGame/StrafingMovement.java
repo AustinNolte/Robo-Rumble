@@ -1,5 +1,6 @@
 package WizardGame;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.java.games.input.Event;
@@ -20,6 +21,8 @@ public class StrafingMovement extends AbstractInputAction{
     public void performAction(float time, Event evt){
         
         Vector3f oldLocVec, rightVec, newLocVec;
+        float y;
+        float angleSigned;
         
         float evtValue = evt.getValue();
         
@@ -28,9 +31,20 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = (oldLocVec.add(rightVec.mul(10*time)));
-            // accounting for terrain
-            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
+            angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
+   
+            // accounting for terrain or stairs
+            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
+            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }else{
+                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }
+    
+            newLocVec.set(newLocVec.x, y ,newLocVec.z);
+
             myGame.getAvatar().setLocalLocation(newLocVec);
+            if(Math.toDegrees(angleSigned) < 90)
+                myGame.getAvatar().globalYaw(angleSigned*3);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("A")){
@@ -38,9 +52,20 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = (oldLocVec.add(rightVec.mul(-10*time)));
-            // accounting for terrain
-            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
+            angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
+            
+            // accounting for terrain or stairs
+            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
+                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }else{
+                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }
+        
+            newLocVec.set(newLocVec.x, y ,newLocVec.z);
+
             myGame.getAvatar().setLocalLocation(newLocVec);
+            if(Math.toDegrees(angleSigned) < 90)
+                myGame.getAvatar().globalYaw(angleSigned*3);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         
         //deadzoning 
@@ -49,9 +74,21 @@ public class StrafingMovement extends AbstractInputAction{
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = (oldLocVec.add(rightVec.mul(10*evtValue*time)));
-            // accounting for terrain
-            newLocVec.set(newLocVec.x,(myGame.getTerrainHeight(newLocVec.x, newLocVec.z)),newLocVec.z);
+            angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
+
+            // accounting for terrain or stairs
+            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
+            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }else{
+                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            }
+        
+            newLocVec.set(newLocVec.x, y ,newLocVec.z);
+
+                           
             myGame.getAvatar().setLocalLocation(newLocVec);
+            if(Math.toDegrees(angleSigned) < 90)
+                myGame.getAvatar().globalYaw(angleSigned*3);
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());;
         }
     }
