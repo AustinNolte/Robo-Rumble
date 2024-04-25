@@ -30,7 +30,7 @@ public class StrafingMovement extends AbstractInputAction{
             // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = (oldLocVec.add((rightVec.mul(time*.25f)).normalize()));
+            newLocVec = (oldLocVec.add((rightVec.mul(time*10))));
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
    
             // accounting for terrain or stairs
@@ -43,15 +43,18 @@ public class StrafingMovement extends AbstractInputAction{
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(Math.toDegrees(angleSigned) < 90)
+            //if(Math.toDegrees(angleSigned) < 90)
+            if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+            }
+            System.out.println(Math.toDegrees(angleSigned));
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("A")){
             // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = (oldLocVec.add((rightVec.mul(-time*.25f)).normalize()));
+            newLocVec = (oldLocVec.add((rightVec.mul(time*-10))));
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
             
             // accounting for terrain or stairs
@@ -64,8 +67,11 @@ public class StrafingMovement extends AbstractInputAction{
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(Math.toDegrees(angleSigned) < 90)
+            System.out.println(Math.toDegrees(angleSigned));
+            if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+            }
+
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         
         //deadzoning 
@@ -73,7 +79,7 @@ public class StrafingMovement extends AbstractInputAction{
             // based on camera heading, cross product between cameraN and world up gives correct right vecotor normalize to make it constant length 1
             rightVec = (myGame.getCameraN().cross(new Vector3f(0,1,0))).normalize();
             oldLocVec = myGame.getAvatar().getWorldLocation();
-            newLocVec = (oldLocVec.add((rightVec.mul(time*evtValue*.25f)).normalize()));
+            newLocVec = (oldLocVec.add((rightVec.mul(time*evtValue*10f))));
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
 
             // accounting for terrain or stairs
@@ -87,8 +93,10 @@ public class StrafingMovement extends AbstractInputAction{
 
                            
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(Math.toDegrees(angleSigned) < 90)
+            //if(Math.toDegrees(angleSigned) < 90)
+            if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+            }
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());;
         }
     }

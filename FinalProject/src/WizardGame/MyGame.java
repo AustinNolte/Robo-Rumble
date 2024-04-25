@@ -8,12 +8,11 @@ import tage.shapes.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import java.lang.Math;
 
 import org.joml.*;
+
 
 
 public class MyGame extends VariableFrameRateGame{
@@ -38,6 +37,8 @@ public class MyGame extends VariableFrameRateGame{
     
     private CameraOrbit3D mainCamController;
 
+    private Vector3f forwardVec;
+    private float angleSigned;
 
     private static Engine engine;
     private GhostManager gm;
@@ -48,6 +49,7 @@ public class MyGame extends VariableFrameRateGame{
     private ProtocolClient protClient;
     private boolean isClientConneted = false;
     private boolean isSinglePlayer = true;
+    private boolean isAiming = false;
 
 
     // constructor for if in multiplayer
@@ -203,6 +205,7 @@ public class MyGame extends VariableFrameRateGame{
         // ------ setting up networking before making input objects etc -----------
         setupNetworking();
         
+        
         // ----------- Setting up input objects -----------
         ForwardMovement FM = new ForwardMovement(this,protClient);
         GameSettingAction GSA = new GameSettingAction(this);
@@ -211,7 +214,7 @@ public class MyGame extends VariableFrameRateGame{
         // ------------- setting up camera controller ----------- 
 		Camera mainCam = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
 
-		mainCamController = new CameraOrbit3D(mainCam, engine, pAvObj);
+		mainCamController = new CameraOrbit3D(mainCam, engine, pAvObj,this);
 
         // ----------- Forward and backward Movement of avatar ------
         engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Y, FM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -272,6 +275,13 @@ public class MyGame extends VariableFrameRateGame{
 				isStaminaZero = false;
 			}
 		}
+        
+        if(isAiming){
+            forwardVec = ((new Vector3f(0,1,0)).cross(getCameraU())).normalize();
+            angleSigned = (float) (forwardVec.angleSigned((getAvatar().getLocalForwardVector()).mul(-1), new Vector3f(0,1,0))*timeSinceLastFrame);
+            pAvObj.globalYaw(angleSigned*3);
+        }
+
         processNetworking((float)elapsedTime);
     }
     
@@ -323,6 +333,14 @@ public class MyGame extends VariableFrameRateGame{
 
     public float getStairs2Height(float x, float z){
         return stairs2.getHeight(x, z);
+    }
+    
+    public void setIsAiming(boolean isAiming){
+        this.isAiming = isAiming;
+    }
+
+    public boolean isAiming(){
+        return isAiming;
     }
     // ------------- Networking part ------------
 
