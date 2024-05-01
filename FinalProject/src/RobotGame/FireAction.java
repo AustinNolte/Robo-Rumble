@@ -61,7 +61,7 @@ public class FireAction extends AbstractInputAction{
             
             
             laser.setPhysicsObject(laserPhysicsObj);
-            laser.getPhysicsObject().applyForce(100, 100, 100, 0,0,0);
+            laser.getPhysicsObject().applyForce(10000, 0, 10000, 0,0,0);
 
             LaserBeamController lbCont = new LaserBeamController(game.getEngine());
             game.getEngine().getSceneGraph().addNodeController(lbCont);

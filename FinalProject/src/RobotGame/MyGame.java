@@ -262,7 +262,7 @@ public class MyGame extends VariableFrameRateGame{
         setupNetworking();
 
         // --------- initalize phyiscs system ---------
-        float[] gravity = {0f,-5f,0f};
+        float[] gravity = {0f,0f,0f};
         physicsEngine = (engine.getSceneGraph()).getPhysicsEngine();
         physicsEngine.setGravity(gravity);
         
@@ -312,7 +312,7 @@ public class MyGame extends VariableFrameRateGame{
 
         // ------------ Fire Laser Beam action ----------
         engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, fA, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-        engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.Y, fA, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.Y, fA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
         // ------------- setting up sound parameters --------------
         audioMgr.getEar().setLocation(pAvObj.getLocalLocation());
@@ -397,15 +397,13 @@ public class MyGame extends VariableFrameRateGame{
         Matrix4f translation = new Matrix4f().identity();
         
         physicsEngine.update((float)elapsedTime);
-        for(GameObject go: engine.getSceneGraph().getGameObjects()){
-            if(go.getPhysicsObject()!= null){
-                translation = new Matrix4f(go.getLocalTranslation());
-                tempTransform = toDoubleArray(translation.get(vals));
-                go.getPhysicsObject().setTransform(tempTransform);
+        
+        translation = new Matrix4f(pAvObj.getLocalTranslation());
+        tempTransform = toDoubleArray(translation.get(vals));
+        pAvObj.getPhysicsObject().setTransform(tempTransform);
                 
-            }
-        }
-        // this is purely for updating laser positioning based on phyiscs objects movement
+        
+                // this is purely for updating laser positioning based on phyiscs objects movement
         for(GameObject go: engine.getSceneGraph().getGameObjects()){
             if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj && go.getPhysicsObject() != null){
                 mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
@@ -413,7 +411,6 @@ public class MyGame extends VariableFrameRateGame{
                 mat2.set(3,1,mat.m31());
                 mat2.set(3,2,mat.m32());
                 go.setLocalTranslation(mat2);
-                System.out.println("here");
             }
         }
         ghostAvObj = gm.getGhostAvatar();
