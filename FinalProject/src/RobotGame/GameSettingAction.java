@@ -1,4 +1,4 @@
-package WizardGame;
+package RobotGame;
 
 
 import net.java.games.input.*;

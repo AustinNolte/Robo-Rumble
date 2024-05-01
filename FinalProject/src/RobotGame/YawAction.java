@@ -1,4 +1,4 @@
-package WizardGame;
+package RobotGame;
 
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;

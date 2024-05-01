@@ -1,4 +1,4 @@
-package WizardGame;
+package RobotGame;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -35,9 +35,9 @@ public class StrafingMovement extends AbstractInputAction{
    
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
             }else{
-                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = oldLocVec.y;
             }
     
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
@@ -47,7 +47,6 @@ public class StrafingMovement extends AbstractInputAction{
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
             }
-            System.out.println(Math.toDegrees(angleSigned));
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("A")){
@@ -59,15 +58,14 @@ public class StrafingMovement extends AbstractInputAction{
             
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
             }else{
-                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = oldLocVec.y;
             }
         
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
-            System.out.println(Math.toDegrees(angleSigned));
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
             }
@@ -84,9 +82,9 @@ public class StrafingMovement extends AbstractInputAction{
 
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
             }else{
-                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = oldLocVec.y;
             }
         
             newLocVec.set(newLocVec.x, y ,newLocVec.z);

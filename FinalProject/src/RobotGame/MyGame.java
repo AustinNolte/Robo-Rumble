@@ -1,9 +1,16 @@
-package WizardGame;
+package RobotGame;
 
 import tage.*;
+import tage.audio.*;
 import tage.input.InputManager;
 import tage.networking.IGameConnection.ProtocolType;
+import tage.physics.PhysicsEngine;
+import tage.physics.PhysicsObject;
+import tage.physics.JBullet.JBulletPhysicsEngine;
+import tage.physics.JBullet.JBulletPhysicsObject;
 import tage.shapes.*;
+import java.awt.event.*;
+
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,10 +24,29 @@ import org.joml.*;
 
 public class MyGame extends VariableFrameRateGame{
 
-    //object notation [...]Obj, shape notation [...]S, texture notation [...]X
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,terrainS,stairsS;
-    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,terrain,stairs1, stairs2;
-    private TextureImage ghostAvX,pAvX,terrainX,terrainHeightMap,stairsHeightMap,stairsX;
+    //object notation [...]Obj, shape notation [...]S, texture notation [...]X, only one animated shape so it is just pAS for player Animated Shape
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS, soundCubeS,laserBeamS;
+    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2, soundCube, laserBeam;
+    private TextureImage ghostAvX,pAvX,groundPlaneX,terrainHeightMap,stairsHeightMap,stairsX, soundCubeX, laserBeamX;
+    private AnimatedShape pAS;
+
+    // phyiscs objects and engine
+    private PhysicsEngine physicsEngine;
+    private PhysicsObject pPhysicsObj, ghostAvPhysicsObj, groundPlanePhysicsObj;
+
+    // float array vals for physics operations
+    private float vals[] = new float[16];
+
+    // phyiscs updates variables
+    private Matrix4f mat,mat2,mat3,tempMove;
+    private AxisAngle4f aa;
+    private double[] tempTransform;
+
+    private IAudioManager audioMgr;
+    private Sound computerNoiseSound;
+
+
+    private float characterAdjust = 2.88f;
     
     
     private Light light1;
@@ -29,6 +55,7 @@ public class MyGame extends VariableFrameRateGame{
     //game timings
     private double lastFrameTime,currFrameTime,elapsedTime,timeSinceLastFrame;
     private boolean isStaminaZero;
+
     private float stamina = 100.0f;
     private int speed = 1;
 
@@ -90,6 +117,21 @@ public class MyGame extends VariableFrameRateGame{
         (engine.getSceneGraph()).setActiveSkyBoxTexture(customSkyBox);
         (engine.getSceneGraph()).setSkyBoxEnabled(true);
     }
+
+    @Override
+    public void loadSounds(){
+        
+        AudioResource resource1;
+
+        audioMgr = engine.getAudioManager();
+        resource1 = audioMgr.createAudioResource("assets/sounds/computerNoise_003.wav", AudioResourceType.AUDIO_SAMPLE);
+        computerNoiseSound = new Sound(resource1,SoundType.SOUND_EFFECT,5,true);
+        computerNoiseSound.initialize(audioMgr);
+        computerNoiseSound.setMaxDistance(10f);
+        computerNoiseSound.setMinDistance(0.5f);
+        computerNoiseSound.setRollOff(5f);
+
+    }
     
     @Override
     public void createViewports(){
@@ -99,13 +141,18 @@ public class MyGame extends VariableFrameRateGame{
 
     @Override
     public void loadShapes() {
-        pAvS = new ImportedModel("robot.obj");
+        pAS = new AnimatedShape("robotMesh.rkm", "robotSkeleton.rks");
+        pAS.loadAnimation("Walk", "ForwardWalk.rka");
+
         ghostAvS = new Cube();
+        soundCubeS = new Cube();
         xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
         yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
         zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));  
-        terrainS = new TerrainPlane(1000);
+        groundPlaneS =  new Plane();
         stairsS = new TerrainPlane(1000);   
+
+        laserBeamS = new Cube();
     }
 
     @Override
@@ -113,12 +160,14 @@ public class MyGame extends VariableFrameRateGame{
         
         pAvX = new TextureImage("robot.png");
         ghostAvX = new TextureImage("CustomTexture2 - Camoflage.png");
+        soundCubeX = new TextureImage("CustomTexture2 - Camoflage.png");
         
-        terrainX = new TextureImage("test2.png");
-        terrainHeightMap = new TextureImage("test.png");
+        groundPlaneX = new TextureImage("test2.png");
 
         stairsX = new TextureImage("CustomTexture1 - Cracked bricks.png");
         stairsHeightMap = new TextureImage("StairsheightMap.png");
+
+        laserBeamX = new TextureImage("laserBeamTex.png");
     }
 
     @Override
@@ -140,43 +189,50 @@ public class MyGame extends VariableFrameRateGame{
 		zAxisObj.getRenderStates().setColor(new Vector3f(0,0,1));
         
         //making temp player obj
-        pAvObj = new GameObject(GameObject.root(), pAvS, pAvX);
-        initTranslation = new Matrix4f().translation(0,1.25f,0);
-		initScale = new Matrix4f().scale(.5f);
+        pAvObj = new GameObject(GameObject.root(), pAS, pAvX);
+        initTranslation = new Matrix4f().translation(0,-4.8f,0);
 		pAvObj.setLocalTranslation(initTranslation);
-		pAvObj.setLocalScale(initScale);
-        initRot = new Matrix4f().identity();
-        initRot.rotate((float)Math.toRadians(90), 1,0,0);
-        pAvObj.getRenderStates().setModelOrientationCorrection(initRot);
-        
-        
-        // making terrain
-        terrain = new GameObject(GameObject.root(),terrainS,terrainX);
-        initTranslation = new Matrix4f().translation(0,0,0);
-        terrain.setLocalTranslation(initTranslation);
-        initScale = new Matrix4f().scale(100,5,100);
-        terrain.setLocalScale(initScale);
-        terrain.setHeightMap(terrainHeightMap);
-
-        // tilling terrain
-        terrain.getRenderStates().setTiling(1);
-        terrain.getRenderStates().setTileFactor(10);
 
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
         initRot = new Matrix4f().identity();
         
-        // making first set of staris
-        stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
-        initTranslation = new Matrix4f().translation(10,1.75f,10);
-        initScale = new Matrix4f().scale(10,10,10);
-        stairs1.setLocalTranslation(initTranslation);
-        stairs1.setLocalScale(initScale);
-        stairs1.setHeightMap(stairsHeightMap);
+        // making ground plane
+        groundPlaneObj = new GameObject(GameObject.root(),groundPlaneS,groundPlaneX);
+        initTranslation = new Matrix4f().translation(0,-5,0);
+        initScale = new Matrix4f().scale(1000);
+        groundPlaneObj.setLocalTranslation(initTranslation);
+        groundPlaneObj.setLocalScale(initScale);
+
+        // tilling ground plane
+        groundPlaneObj.getRenderStates().setTiling(1);
+        groundPlaneObj.getRenderStates().setTileFactor(10);
+
+        // sound cube for milestone
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        initRot = new Matrix4f().identity();
+
+        soundCube = new GameObject(GameObject.root(), soundCubeS, soundCubeX);
+        initTranslation = new Matrix4f().translation(10, 10, 10);
+        soundCube.setLocalTranslation(initTranslation);
         
-        //tilling stairs
-        stairs1.getRenderStates().setTiling(1);
-        stairs1.getRenderStates().setTileFactor(10);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        initRot = new Matrix4f().identity();
+        
+        //// making first set of staris
+        //stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
+        //initTranslation = new Matrix4f().translation(100,1.75f,10);
+        //initScale = new Matrix4f().scale(10,10,10);
+        //stairs1.setLocalTranslation(initTranslation);
+        //stairs1.setLocalScale(initScale);
+        //stairs1.setHeightMap(stairsHeightMap);
+        //
+        ////tilling stairs
+        //stairs1.getRenderStates().setTiling(1);
+        //stairs1.getRenderStates().setTileFactor(10);
 
     }
 
@@ -204,12 +260,36 @@ public class MyGame extends VariableFrameRateGame{
 
         // ------ setting up networking before making input objects etc -----------
         setupNetworking();
+
+        // --------- initalize phyiscs system ---------
+        float[] gravity = {0f,-5f,0f};
+        physicsEngine = (engine.getSceneGraph()).getPhysicsEngine();
+        physicsEngine.setGravity(gravity);
         
+        // --------- Adding Phyiscs Objects  --------------
+        float mass = 1.0f;
+        float up[] = {0,1,0};
+        float[] size = {2,5.5f,1};
+
+        
+        Matrix4f translation = new Matrix4f(pAvObj.getLocalTranslation());
+        tempTransform = toDoubleArray(translation.get(vals));
+        pPhysicsObj = (engine.getSceneGraph()).addPhysicsBox(mass, tempTransform, size);
+
+        pAvObj.setPhysicsObject(pPhysicsObj);
+
+        translation = new Matrix4f(groundPlaneObj.getLocalTranslation());
+        tempTransform = toDoubleArray(translation.get(vals));
+        groundPlanePhysicsObj = (engine.getSceneGraph()).addPhysicsStaticPlane(tempTransform,up,0.0f);
+
+        groundPlaneObj.setPhysicsObject(groundPlanePhysicsObj);
+
         
         // ----------- Setting up input objects -----------
         ForwardMovement FM = new ForwardMovement(this,protClient);
         GameSettingAction GSA = new GameSettingAction(this);
         StrafingMovement SM = new StrafingMovement(this,protClient);
+        FireAction fA = new FireAction(this, laserBeamS,laserBeamX, protClient);
 
         // ------------- setting up camera controller ----------- 
 		Camera mainCam = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
@@ -230,7 +310,16 @@ public class MyGame extends VariableFrameRateGame{
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
-        
+        // ------------ Fire Laser Beam action ----------
+        engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, fA, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.Y, fA, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+        // ------------- setting up sound parameters --------------
+        audioMgr.getEar().setLocation(pAvObj.getLocalLocation());
+        audioMgr.getEar().setOrientation(mainCam.getN(), new Vector3f(0,1,0));
+
+        computerNoiseSound.setLocation(soundCube.getWorldLocation());
+        computerNoiseSound.play();
 
 
     }
@@ -281,7 +370,60 @@ public class MyGame extends VariableFrameRateGame{
             angleSigned = (float) (forwardVec.angleSigned((getAvatar().getLocalForwardVector()).mul(-1), new Vector3f(0,1,0))*timeSinceLastFrame);
             pAvObj.globalYaw(angleSigned*3);
         }
+        
+        // ----- player animation update -----
+        pAS.updateAnimation();
 
+        // ----- moving sound for milestone -----
+        tempMove = new Matrix4f().identity();
+        tempMove.translate((float)Math.cos(elapsedTime),0,(float)Math.sin(elapsedTime));
+        soundCube.setLocalTranslation(tempMove);
+        
+        computerNoiseSound.setLocation(soundCube.getWorldLocation());
+
+        Camera mainCam = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
+        audioMgr.getEar().setLocation(pAvObj.getLocalLocation());
+        audioMgr.getEar().setOrientation(mainCam.getN(), new Vector3f(0,1,0));
+
+
+
+        // ---------- Handling phyiscs updates -----------
+        checkForCollisions();
+
+        aa = new AxisAngle4f();
+        mat = new Matrix4f().identity();
+        mat2 = new Matrix4f().identity();
+        mat3 = new Matrix4f().identity();
+        Matrix4f translation = new Matrix4f().identity();
+        
+        physicsEngine.update((float)elapsedTime);
+        for(GameObject go: engine.getSceneGraph().getGameObjects()){
+            if(go.getPhysicsObject()!= null){
+                translation = new Matrix4f(go.getLocalTranslation());
+                tempTransform = toDoubleArray(translation.get(vals));
+                go.getPhysicsObject().setTransform(tempTransform);
+                
+            }
+        }
+        // this is purely for updating laser positioning based on phyiscs objects movement
+        for(GameObject go: engine.getSceneGraph().getGameObjects()){
+            if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj && go.getPhysicsObject() != null){
+                mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+                mat2.set(3,0,mat.m30());
+                mat2.set(3,1,mat.m31());
+                mat2.set(3,2,mat.m32());
+                go.setLocalTranslation(mat2);
+                System.out.println("here");
+            }
+        }
+        ghostAvObj = gm.getGhostAvatar();
+        if(ghostAvObj != null){
+            translation = new Matrix4f(ghostAvObj.getLocalTranslation());
+            tempTransform = toDoubleArray(translation.get(vals));
+            ghostAvObj.getPhysicsObject().setTransform(tempTransform);
+        }
+        
+        
         processNetworking((float)elapsedTime);
     }
     
@@ -322,13 +464,10 @@ public class MyGame extends VariableFrameRateGame{
     public Vector3f getCameraU(){
         return mainCamController.getCameraU();
     }
-    
-    public float getTerrainHeight(float x, float z){
-        return terrain.getHeight(x, z);
-    }
 
     public float getStairs1Height(float x, float z){
-        return stairs1.getHeight(x, z);
+        return -5;
+        //return stairs1.getHeight(x, z);
     }
 
     public float getStairs2Height(float x, float z){
@@ -341,6 +480,14 @@ public class MyGame extends VariableFrameRateGame{
 
     public boolean isAiming(){
         return isAiming;
+    }
+
+    public float getCharacterAdjust(){
+        return characterAdjust;
+    }
+
+    public AnimatedShape getPlayerSkeleton(){
+        return pAS;
     }
     // ------------- Networking part ------------
 
@@ -372,5 +519,69 @@ public class MyGame extends VariableFrameRateGame{
 
     public void setIsConnected(boolean isClientConnected){
         this.isClientConneted = isClientConnected;
+    }
+    
+    @Override
+    public void keyPressed(KeyEvent e){
+        switch(e.getKeyCode()){
+            case KeyEvent.VK_1: engine.enablePhysicsWorldRender(); break;
+            case KeyEvent.VK_2: engine.disablePhysicsWorldRender(); break;
+            case KeyEvent.VK_3: computerNoiseSound.stop(); break;
+            case KeyEvent.VK_4: computerNoiseSound.play(); break;
+        }
+        super.keyPressed(e);
+    }
+
+    // ---------- Phyiscs World Utility Functions ---------
+    public float[] toFloatArray(double[] arr){
+        if(arr == null){
+            return null;
+        }else{
+            float[] ret = new float[arr.length];
+            for (int i = 0; i<arr.length; i++){
+                ret[i] = (float)arr[i];
+            }
+            return ret;
+        }
+    }
+    
+    public double[] toDoubleArray(float[] arr){
+        if(arr == null){
+            return null;
+        }else{
+            double[] ret = new double[arr.length];
+            for (int i = 0; i<arr.length; i++){
+                ret[i] = (double)arr[i];
+            }
+            return ret;
+        }
+    }
+
+    private void checkForCollisions(){
+        com.bulletphysics.dynamics.DynamicsWorld dynamicsWorld;
+        com.bulletphysics.collision.broadphase.Dispatcher dispatcher;
+        com.bulletphysics.collision.narrowphase.PersistentManifold manifold;
+        com.bulletphysics.dynamics.RigidBody object1,object2;
+        com.bulletphysics.collision.narrowphase.ManifoldPoint contactPoint;
+
+        dynamicsWorld = ((JBulletPhysicsEngine)physicsEngine).getDynamicsWorld();
+        dispatcher = dynamicsWorld.getDispatcher();
+        for(int i = 0; i<dispatcher.getNumManifolds(); i++){
+            manifold = dispatcher.getManifoldByIndexInternal(i);
+            object1 = (com.bulletphysics.dynamics.RigidBody)manifold.getBody0();
+            object2 = (com.bulletphysics.dynamics.RigidBody)manifold.getBody1();
+            JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
+            JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
+
+            for(int j =0; j<manifold.getNumContacts(); j++){
+                contactPoint = manifold.getContactPoint(j);
+                if(contactPoint.getDistance() < 0.0f){
+                    //System.out.println("---- hit between " + obj1 + " and " + obj2);
+                    break;
+                }
+            }
+
+
+        }
     }
 }

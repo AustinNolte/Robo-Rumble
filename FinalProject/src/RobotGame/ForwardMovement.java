@@ -1,10 +1,11 @@
-package WizardGame;
+package RobotGame;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
+import tage.shapes.AnimatedShape;
 
 public class ForwardMovement extends AbstractInputAction{
     
@@ -33,19 +34,19 @@ public class ForwardMovement extends AbstractInputAction{
             newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time)));
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
             }else{
-                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = oldLocVec.y;
             }
             
-            newLocVec.set(newLocVec.x, y ,newLocVec.z);
+            newLocVec.set(newLocVec.x, y  ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
-            System.out.println(Math.toDegrees(angleSigned));
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
             }
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+            myGame.getPlayerSkeleton().playAnimation("Walk", .04f, AnimatedShape.EndType.LOOP, 0);
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("S")){
             // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
@@ -56,15 +57,14 @@ public class ForwardMovement extends AbstractInputAction{
             
             // accounting for terrain or stairs
             if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
             }else{
-                y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                y = oldLocVec.y;
             }
             
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
             
             myGame.getAvatar().setLocalLocation(newLocVec);
-            System.out.println(Math.toDegrees(angleSigned));
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
             }
@@ -81,9 +81,9 @@ public class ForwardMovement extends AbstractInputAction{
                 
                 // accounting for terrain or stairs
                 if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
                 }else{
-                    y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                    y = oldLocVec.y;
                 }
             
                 newLocVec.set(newLocVec.x, y ,newLocVec.z);
@@ -106,12 +106,12 @@ public class ForwardMovement extends AbstractInputAction{
                 newLocVec = (oldLocVec.add(forwardVec.mul(10*time*evtValue)));
                 // accounting for terrain or stairs
                 if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z) + myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
                 }else{
-                    y = myGame.getTerrainHeight(newLocVec.x, newLocVec.z);
+                    y = oldLocVec.y;
                 }
                 
-                newLocVec.set(newLocVec.x, y ,newLocVec.z);
+                newLocVec.set(newLocVec.x, y , newLocVec.z);
 
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 if(!(myGame.isAiming())){

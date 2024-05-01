@@ -1,4 +1,4 @@
-package WizardGame;
+package RobotGame;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -7,9 +7,21 @@ import java.util.UUID;
 
 import org.joml.*;
 
+import tage.Engine;
+import tage.physics.PhysicsObject;
+
+
+
 public class GhostManager {
 
     private MyGame game;
+    
+    // float array vals for physics operations
+    private float vals[] = new float[16];
+    private double[] tempTransform;
+    private PhysicsObject ghostAvPhysicsObj;
+    private float mass = 1.0f;
+    private float[] size = {2,5.5f,1};
 
     private Vector<GhostAvatar> gaVec = new Vector<GhostAvatar>();
     //inital scale for all ghost avatars
@@ -25,6 +37,16 @@ public class GhostManager {
         // creating new ghost avatar
         GhostAvatar newA = new GhostAvatar(id, game.getGhostObjShape(),game.getGhostTextureImage(), position);
 
+        // --------- Adding Phyiscs Objects  --------------
+        
+
+        
+        Matrix4f translation = new Matrix4f(newA.getLocalTranslation());
+        tempTransform = game.toDoubleArray(translation.get(vals));
+        ghostAvPhysicsObj = ((game.getEngine()).getSceneGraph()).addPhysicsBox(mass, tempTransform, size);
+
+        newA.setPhysicsObject(ghostAvPhysicsObj);
+
         // scaling to be same scaling as player avatar
         newA.setLocalScale(initalScale);
 
@@ -37,6 +59,7 @@ public class GhostManager {
         if(ga == null){
             System.out.println("error removing ghost avatar with id " + id.toString() + " because it does not exist");
         }else{
+            game.getEngine().getSceneGraph().removePhysicsObject(ga.getPhysicsObject());
             game.getEngine().getSceneGraph().removeGameObject(ga);
             gaVec.remove(ga);
         }
@@ -62,6 +85,15 @@ public class GhostManager {
         }else{
             // updating position
             ga.setLocalRotation(rotation);
+        }
+    }
+
+    // there is only one ghost avatar as my game is designed to only be 2 player max
+    public GhostAvatar getGhostAvatar(){
+        if(gaVec.size() == 0){
+            return null;
+        }else{
+            return gaVec.get(0);
         }
     }
 

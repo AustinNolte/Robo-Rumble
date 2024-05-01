@@ -1,4 +1,4 @@
-package WizardGame;
+package RobotGame;
 
 import java.io.IOException;
 import java.net.InetAddress;
