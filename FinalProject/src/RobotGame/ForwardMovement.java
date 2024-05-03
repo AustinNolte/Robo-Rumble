@@ -38,9 +38,21 @@ public class ForwardMovement extends AbstractInputAction{
             }else{
                 y = oldLocVec.y;
             }
-            
+            // checking for world boundries
+            if(newLocVec.x > 273){
+                newLocVec.x = 273;
+            }
+            if(newLocVec.x < -273){
+                newLocVec.x = -273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = 273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = -273;
+            }
             newLocVec.set(newLocVec.x, y  ,newLocVec.z);
-
+            
             myGame.getAvatar().setLocalLocation(newLocVec);
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
@@ -61,7 +73,19 @@ public class ForwardMovement extends AbstractInputAction{
             }else{
                 y = oldLocVec.y;
             }
-            
+            // checking for world boundries
+            if(newLocVec.x > 273){
+                newLocVec.x = 273;
+            }
+            if(newLocVec.x < -273){
+                newLocVec.x = -273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = 273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = -273;
+            }
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
             
             myGame.getAvatar().setLocalLocation(newLocVec);
@@ -85,7 +109,21 @@ public class ForwardMovement extends AbstractInputAction{
                 }else{
                     y = oldLocVec.y;
                 }
-            
+
+                // checking for world boundries
+                if(newLocVec.x > 273){
+                    newLocVec.x = 273;
+                }
+                if(newLocVec.x < -273){
+                    newLocVec.x = -273;
+                }
+                if(newLocVec.z > 273){
+                    newLocVec.z = 273;
+                }
+                if(newLocVec.z > 273){
+                    newLocVec.z = -273;
+                }
+
                 newLocVec.set(newLocVec.x, y ,newLocVec.z);
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 if(!(myGame.isAiming())){
@@ -111,6 +149,20 @@ public class ForwardMovement extends AbstractInputAction{
                     y = oldLocVec.y;
                 }
                 
+                // checking for world boundries
+                if(newLocVec.x > 273){
+                    newLocVec.x = 273;
+                }
+                if(newLocVec.x < -273){
+                    newLocVec.x = -273;
+                }
+                if(newLocVec.z > 273){
+                    newLocVec.z = 273;
+                }
+                if(newLocVec.z > 273){
+                    newLocVec.z = -273;
+                }
+
                 newLocVec.set(newLocVec.x, y , newLocVec.z);
 
                 myGame.getAvatar().setLocalLocation(newLocVec);

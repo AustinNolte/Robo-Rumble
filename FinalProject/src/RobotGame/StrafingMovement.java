@@ -39,7 +39,21 @@ public class StrafingMovement extends AbstractInputAction{
             }else{
                 y = oldLocVec.y;
             }
-    
+
+            // checking for world boundries
+            if(newLocVec.x > 273){
+                newLocVec.x = 273;
+            }
+            if(newLocVec.x < -273){
+                newLocVec.x = -273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = 273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = -273;
+            }
+
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
@@ -62,7 +76,21 @@ public class StrafingMovement extends AbstractInputAction{
             }else{
                 y = oldLocVec.y;
             }
-        
+            
+            // checking for world boundries
+            if(newLocVec.x > 273){
+                newLocVec.x = 273;
+            }
+            if(newLocVec.x < -273){
+                newLocVec.x = -273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = 273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = -273;
+            }
+
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
@@ -86,7 +114,21 @@ public class StrafingMovement extends AbstractInputAction{
             }else{
                 y = oldLocVec.y;
             }
-        
+
+            // checking for world boundries
+            if(newLocVec.x > 273){
+                newLocVec.x = 273;
+            }
+            if(newLocVec.x < -273){
+                newLocVec.x = -273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = 273;
+            }
+            if(newLocVec.z > 273){
+                newLocVec.z = -273;
+            }
+
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
                            

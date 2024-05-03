@@ -24,6 +24,7 @@ public class FireAction extends AbstractInputAction{
     private float velocity[] = new float[3];
     
 
+
     public FireAction(MyGame game, ObjShape laserShape, TextureImage laserImage, ProtocolClient p){
         this.game = game;
         this.laserImage = laserImage;
@@ -39,16 +40,16 @@ public class FireAction extends AbstractInputAction{
        
 
         // adding deadzoning to right trigger, only works with right trigger
-        if(evtValue > 0.2f || evt.getComponent().toString().equalsIgnoreCase("Y")){
+        if(evtValue >= 0.99f || evt.getComponent().toString().equalsIgnoreCase("Y")){
             // creating laser object
             GameObject laser = new GameObject(GameObject.root(),laserShape,laserImage);
             initTrans = new Matrix4f().identity();
             initRot = new Matrix4f().identity();
             initScale = new Matrix4f().identity();
             
-            initTrans.translate(game.getAvatar().getLocalLocation().add(0,5.5f,0));
-            initScale.scale(.4f,.2f,.2f);
-            initRot.lookAlong(game.getCameraN(), new Vector3f(0,1,0));
+            initTrans.translate(game.getAvatar().getLocalLocation().add(game.getAvatar().getLocalForwardVector().x*2,5.5f,game.getAvatar().getLocalForwardVector().z*2));
+            initRot.lookAlong(game.getCameraN().mul(-1), game.getCameraV());
+            initScale.scale(.05f,.05f,1f);
 
             laser.setLocalTranslation(initTrans);
             laser.setLocalRotation(initRot);
@@ -56,12 +57,13 @@ public class FireAction extends AbstractInputAction{
 
             // creating laser physics object
             Matrix4f translation = new Matrix4f(laser.getLocalTranslation());
+            translation.mul(initRot);
             tempTransform = game.toDoubleArray(translation.get(vals));
             laserPhysicsObj = (game.getEngine().getSceneGraph()).addPhysicsBox(mass,tempTransform, size);
             
             
             laser.setPhysicsObject(laserPhysicsObj);
-            laser.getPhysicsObject().applyForce(10000, 0, 10000, 0,0,0);
+            laser.getPhysicsObject().applyForce(game.getCameraN().x*1000, game.getCameraN().y*1000, game.getCameraN().z*1000, 0, 0, 0);
 
             LaserBeamController lbCont = new LaserBeamController(game.getEngine());
             game.getEngine().getSceneGraph().addNodeController(lbCont);

@@ -25,9 +25,13 @@ import org.joml.*;
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X, only one animated shape so it is just pAS for player Animated Shape
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS, soundCubeS,laserBeamS;
-    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2, soundCube, laserBeam;
-    private TextureImage ghostAvX,pAvX,groundPlaneX,terrainHeightMap,stairsHeightMap,stairsX, soundCubeX, laserBeamX;
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS,laserBeamS, fenceS, largeBoxS, wideBoxS, longBoxS, smallBoxS;
+    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2; 
+    private GameObject largeBox1, largeBox2, largeBox3, largeBox4, largeBox5;
+    private GameObject smallBox1, smallBox2, smallBox3, smallBox4, smallBox5;
+    private GameObject wideBox1, wideBox2, wideBox3, wideBox4, wideBox5;
+    private GameObject longBox1, longBox2, longBox3, longBox4, longBox5;
+    private TextureImage ghostAvX,pAvX,groundPlaneX,stairsHeightMap,stairsX, laserBeamX, fenceX, boxX;
     private AnimatedShape pAS;
 
     // phyiscs objects and engine
@@ -43,7 +47,6 @@ public class MyGame extends VariableFrameRateGame{
     private double[] tempTransform;
 
     private IAudioManager audioMgr;
-    private Sound computerNoiseSound;
 
 
     private float characterAdjust = 2.88f;
@@ -120,16 +123,6 @@ public class MyGame extends VariableFrameRateGame{
 
     @Override
     public void loadSounds(){
-        
-        AudioResource resource1;
-
-        audioMgr = engine.getAudioManager();
-        resource1 = audioMgr.createAudioResource("assets/sounds/computerNoise_003.wav", AudioResourceType.AUDIO_SAMPLE);
-        computerNoiseSound = new Sound(resource1,SoundType.SOUND_EFFECT,5,true);
-        computerNoiseSound.initialize(audioMgr);
-        computerNoiseSound.setMaxDistance(10f);
-        computerNoiseSound.setMinDistance(0.5f);
-        computerNoiseSound.setRollOff(5f);
 
     }
     
@@ -145,7 +138,6 @@ public class MyGame extends VariableFrameRateGame{
         pAS.loadAnimation("Walk", "ForwardWalk.rka");
 
         ghostAvS = new Cube();
-        soundCubeS = new Cube();
         xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
         yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
         zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));  
@@ -153,6 +145,13 @@ public class MyGame extends VariableFrameRateGame{
         stairsS = new TerrainPlane(1000);   
 
         laserBeamS = new Cube();
+
+        fenceS = new ImportedModel("iron-fence-border.obj");
+
+        largeBoxS = new ImportedModel("box-large.obj");
+        wideBoxS = new ImportedModel("box-wide.obj");
+        smallBoxS = new ImportedModel("box-small.obj");
+        longBoxS = new ImportedModel("box-large.obj");
     }
 
     @Override
@@ -160,7 +159,6 @@ public class MyGame extends VariableFrameRateGame{
         
         pAvX = new TextureImage("robot.png");
         ghostAvX = new TextureImage("CustomTexture2 - Camoflage.png");
-        soundCubeX = new TextureImage("CustomTexture2 - Camoflage.png");
         
         groundPlaneX = new TextureImage("test2.png");
 
@@ -168,6 +166,10 @@ public class MyGame extends VariableFrameRateGame{
         stairsHeightMap = new TextureImage("StairsheightMap.png");
 
         laserBeamX = new TextureImage("laserBeamTex.png");
+
+        fenceX = new TextureImage("colormapGraveYard.png");
+
+        boxX = new TextureImage("variation-a.png");
     }
 
     @Override
@@ -208,19 +210,172 @@ public class MyGame extends VariableFrameRateGame{
         groundPlaneObj.getRenderStates().setTiling(1);
         groundPlaneObj.getRenderStates().setTileFactor(10);
 
-        // sound cube for milestone
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
         initRot = new Matrix4f().identity();
 
-        soundCube = new GameObject(GameObject.root(), soundCubeS, soundCubeX);
-        initTranslation = new Matrix4f().translation(10, 10, 10);
-        soundCube.setLocalTranslation(initTranslation);
+        // making world border on negative x axis
+        for(int i = 0; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(-275,-4.9f,0 + i*50);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+            fence.globalYaw((float)Math.toRadians(90));
+        }
+        for(int i = 1; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(-275,-4.9f,0 + i*-50);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+            fence.globalYaw((float)Math.toRadians(90));
+        }
+
+        // making world border positive x axis
+        for(int i = 0; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(275,-4.9f,0 + i*50);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+            fence.globalYaw((float)Math.toRadians(90));
+        }
+        for(int i = 1; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(275,-4.9f,0 + i*-50);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+            fence.globalYaw((float)Math.toRadians(90));
+        }
+        // making world positive z axis
+        for(int i = 0; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(i * 50,-4.9f,275);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+        }
+        for(int i = 1; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(i * -50,-4.9f,275);
+            initScale = new Matrix4f().scale(50,10,25);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+        }
+
+        // making world negative z axis
+        for(int i = 0; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(i * 50,-4.9f,-275);
+            initScale = new Matrix4f().scale(100,10,50);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+        }
+        for(int i = 1; i<6; i++){
+            initTranslation = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
+            initTranslation = new Matrix4f().translation(i * -50,-4.9f,-275);
+            initScale = new Matrix4f().scale(100,10,50);
+            fence.setLocalTranslation(initTranslation);
+            fence.setLocalScale(initScale);
+        }
         
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        
+        //----------  making cardboard boxes in map for cover ------------
+        largeBox1 = new GameObject(GameObject.root(), largeBoxS, boxX);
+        initTranslation = new Matrix4f().translation(141,-4.9f,179);
+        initScale = new Matrix4f().scale(5);
+
+        largeBox1.setLocalTranslation(initTranslation);
+        largeBox1.setLocalScale(initScale);
 
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
-        initRot = new Matrix4f().identity();
+        
+        largeBox2 = new GameObject(GameObject.root(), largeBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-155,-4.9f,84);
+        initScale = new Matrix4f().scale(5);
+
+        largeBox2.setLocalTranslation(initTranslation);
+        largeBox2.setLocalScale(initScale);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        
+        largeBox3 = new GameObject(GameObject.root(), largeBoxS, boxX);
+        initTranslation = new Matrix4f().translation(145,-4.9f,-61);
+        initScale = new Matrix4f().scale(6);
+
+        largeBox3.setLocalTranslation(initTranslation);
+        largeBox3.setLocalScale(initScale);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        
+        largeBox4 = new GameObject(GameObject.root(), largeBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-67,-4.9f,-154);
+        initScale = new Matrix4f().scale(4);
+
+        largeBox4.setLocalTranslation(initTranslation);
+        largeBox4.setLocalScale(initScale);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox5 = new GameObject(GameObject.root(), largeBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-151,-4.9f,-180);
+        initScale = new Matrix4f().scale(7);
+
+        largeBox5.setLocalTranslation(initTranslation);
+        largeBox5.setLocalScale(initScale);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        wideBox1 = new GameObject(GameObject.root(),wideBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-247,-4.9f,-254);
+        initScale = new Matrix4f().scale(5);
+        wideBox1.setLocalTranslation(initTranslation);
+        wideBox1.setLocalScale(initScale);
+        wideBox1.globalYaw((float)Math.toRadians(50));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        smallBox1 = new GameObject(wideBox1, smallBoxS, boxX);
+        initTranslation = new Matrix4f().translation(1.2f,2.5f,1.3f);
+        initScale = new Matrix4f().scale(.5f);
+
+        smallBox1.propagateRotation(false);
+        smallBox1.setLocalTranslation(initTranslation);
+        smallBox1.setLocalScale(initScale);
         
         //// making first set of staris
         //stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
@@ -261,6 +416,9 @@ public class MyGame extends VariableFrameRateGame{
         // ------ setting up networking before making input objects etc -----------
         setupNetworking();
 
+        for(GameObject go: engine.getSceneGraph().getGameObjects()){
+            System.out.println(go);
+        }
         // --------- initalize phyiscs system ---------
         float[] gravity = {0f,0f,0f};
         physicsEngine = (engine.getSceneGraph()).getPhysicsEngine();
@@ -283,7 +441,6 @@ public class MyGame extends VariableFrameRateGame{
         groundPlanePhysicsObj = (engine.getSceneGraph()).addPhysicsStaticPlane(tempTransform,up,0.0f);
 
         groundPlaneObj.setPhysicsObject(groundPlanePhysicsObj);
-
         
         // ----------- Setting up input objects -----------
         ForwardMovement FM = new ForwardMovement(this,protClient);
@@ -311,15 +468,10 @@ public class MyGame extends VariableFrameRateGame{
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, SM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
         // ------------ Fire Laser Beam action ----------
-        engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, fA, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+        engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, fA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.Y, fA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
         // ------------- setting up sound parameters --------------
-        audioMgr.getEar().setLocation(pAvObj.getLocalLocation());
-        audioMgr.getEar().setOrientation(mainCam.getN(), new Vector3f(0,1,0));
-
-        computerNoiseSound.setLocation(soundCube.getWorldLocation());
-        computerNoiseSound.play();
 
 
     }
@@ -341,7 +493,7 @@ public class MyGame extends VariableFrameRateGame{
         //updating camera and input manager
         engine.getInputManager().update((float)timeSinceLastFrame);
         mainCamController.updateCamera(); 
-        
+        System.out.println(pAvObj.getWorldLocation().x + ", " + pAvObj.getWorldLocation().z);
         // -----------  Handling sprinting and stamina usage -----------
         if(!isStaminaZero){
 			//If you are sprinting it costs stamina and it regenerates half as fast as it is used. cannot go higher than 100 or less than 0
@@ -374,19 +526,6 @@ public class MyGame extends VariableFrameRateGame{
         // ----- player animation update -----
         pAS.updateAnimation();
 
-        // ----- moving sound for milestone -----
-        tempMove = new Matrix4f().identity();
-        tempMove.translate((float)Math.cos(elapsedTime),0,(float)Math.sin(elapsedTime));
-        soundCube.setLocalTranslation(tempMove);
-        
-        computerNoiseSound.setLocation(soundCube.getWorldLocation());
-
-        Camera mainCam = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
-        audioMgr.getEar().setLocation(pAvObj.getLocalLocation());
-        audioMgr.getEar().setOrientation(mainCam.getN(), new Vector3f(0,1,0));
-
-
-
         // ---------- Handling phyiscs updates -----------
         checkForCollisions();
 
@@ -396,16 +535,16 @@ public class MyGame extends VariableFrameRateGame{
         mat3 = new Matrix4f().identity();
         Matrix4f translation = new Matrix4f().identity();
         
-        physicsEngine.update((float)elapsedTime);
+        physicsEngine.update((float)timeSinceLastFrame*1000);
         
         translation = new Matrix4f(pAvObj.getLocalTranslation());
         tempTransform = toDoubleArray(translation.get(vals));
         pAvObj.getPhysicsObject().setTransform(tempTransform);
                 
-        
-                // this is purely for updating laser positioning based on phyiscs objects movement
+        // this is purely for updating laser positioning based on phyiscs objects movement
         for(GameObject go: engine.getSceneGraph().getGameObjects()){
             if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj && go.getPhysicsObject() != null){
+                go.getPhysicsObject().applyForce(getCameraN().x*1000, getCameraN().y*1000, getCameraN().z*1000, 0, 0, 0);
                 mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
                 mat2.set(3,0,mat.m30());
                 mat2.set(3,1,mat.m31());
@@ -460,6 +599,10 @@ public class MyGame extends VariableFrameRateGame{
 
     public Vector3f getCameraU(){
         return mainCamController.getCameraU();
+    }
+    
+    public Vector3f getCameraV(){
+        return mainCamController.getCameraV();
     }
 
     public float getStairs1Height(float x, float z){
@@ -523,8 +666,6 @@ public class MyGame extends VariableFrameRateGame{
         switch(e.getKeyCode()){
             case KeyEvent.VK_1: engine.enablePhysicsWorldRender(); break;
             case KeyEvent.VK_2: engine.disablePhysicsWorldRender(); break;
-            case KeyEvent.VK_3: computerNoiseSound.stop(); break;
-            case KeyEvent.VK_4: computerNoiseSound.play(); break;
         }
         super.keyPressed(e);
     }
