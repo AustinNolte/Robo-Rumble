@@ -25,13 +25,13 @@ import org.joml.*;
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X, only one animated shape so it is just pAS for player Animated Shape
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS,laserBeamS, fenceS, largeBoxS, wideBoxS, longBoxS, smallBoxS;
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS,laserBeamS, fenceS, largeBoxS, wideBoxS, longBoxS, smallBoxS, npcS;
     private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2; 
     private GameObject largeBox1, largeBox2, largeBox3, largeBox4, largeBox5;
     private GameObject smallBox1, smallBox2, smallBox3, smallBox4, smallBox5;
     private GameObject wideBox1, wideBox2, wideBox3, wideBox4, wideBox5;
     private GameObject longBox1, longBox2, longBox3, longBox4, longBox5;
-    private TextureImage ghostAvX,pAvX,groundPlaneX,stairsHeightMap,stairsX, laserBeamX, fenceX, boxX;
+    private TextureImage ghostAvX,pAvX,groundPlaneX,stairsHeightMap,stairsX, laserBeamX, fenceX, boxX, npcX;
     private AnimatedShape pAS;
 
     // phyiscs objects and engine
@@ -144,10 +144,12 @@ public class MyGame extends VariableFrameRateGame{
         groundPlaneS =  new Plane();
         stairsS = new TerrainPlane(1000);   
 
+        npcS = new Cube();
+
         laserBeamS = new Cube();
 
         fenceS = new ImportedModel("iron-fence-border.obj");
-
+        
         largeBoxS = new ImportedModel("box-large.obj");
         wideBoxS = new ImportedModel("box-wide.obj");
         smallBoxS = new ImportedModel("box-small.obj");
@@ -170,6 +172,8 @@ public class MyGame extends VariableFrameRateGame{
         fenceX = new TextureImage("colormapGraveYard.png");
 
         boxX = new TextureImage("variation-a.png");
+
+        npcX = new TextureImage("CustomTexture1 - Cracked bricks.png");
     }
 
     @Override
@@ -308,9 +312,9 @@ public class MyGame extends VariableFrameRateGame{
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
         
-        //----------  making cardboard boxes in map for cover ------------
+        //----------  making large cardboard boxes in map for cover ------------
         largeBox1 = new GameObject(GameObject.root(), largeBoxS, boxX);
-        initTranslation = new Matrix4f().translation(141,-4.9f,179);
+        initTranslation = new Matrix4f().translation(141,-4.9f,-179);
         initScale = new Matrix4f().scale(5);
 
         largeBox1.setLocalTranslation(initTranslation);
@@ -350,12 +354,15 @@ public class MyGame extends VariableFrameRateGame{
         initScale = new Matrix4f().identity();
 
         largeBox5 = new GameObject(GameObject.root(), largeBoxS, boxX);
-        initTranslation = new Matrix4f().translation(-151,-4.9f,-180);
+        initTranslation = new Matrix4f().translation(151,-4.9f,-180);
         initScale = new Matrix4f().scale(7);
 
         largeBox5.setLocalTranslation(initTranslation);
         largeBox5.setLocalScale(initScale);
+        
+        //----------  making wide cardboard boxes with small ones on top in map for cover ------------
 
+        // wide and small box 1
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
 
@@ -376,6 +383,149 @@ public class MyGame extends VariableFrameRateGame{
         smallBox1.propagateRotation(false);
         smallBox1.setLocalTranslation(initTranslation);
         smallBox1.setLocalScale(initScale);
+
+        // wide and small box 2
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        wideBox2 = new GameObject(GameObject.root(),wideBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-38,-4.9f,-177);
+        initScale = new Matrix4f().scale(5);
+        wideBox2.setLocalTranslation(initTranslation);
+        wideBox2.setLocalScale(initScale);
+        wideBox2.globalYaw((float)Math.toRadians(70));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        smallBox2 = new GameObject(wideBox2, smallBoxS, boxX);
+        initTranslation = new Matrix4f().translation(1.2f,2.5f,1.3f);
+        initScale = new Matrix4f().scale(.25f);
+
+        smallBox2.propagateRotation(false);
+        smallBox2.setLocalTranslation(initTranslation);
+        smallBox2.setLocalScale(initScale);
+
+        // wide and small box 3
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        wideBox3 = new GameObject(GameObject.root(),wideBoxS, boxX);
+        initTranslation = new Matrix4f().translation(167,-4.9f,-117);
+        initScale = new Matrix4f().scale(5);
+        wideBox3.setLocalTranslation(initTranslation);
+        wideBox3.setLocalScale(initScale);
+        wideBox3.globalYaw((float)Math.toRadians(110));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        smallBox3 = new GameObject(wideBox3, smallBoxS, boxX);
+        initTranslation = new Matrix4f().translation(1.2f,2.5f,1.3f);
+        initScale = new Matrix4f().scale(.4f);
+
+        smallBox3.propagateRotation(false);
+        smallBox3.setLocalTranslation(initTranslation);
+        smallBox3.setLocalScale(initScale);
+
+        // wide and small box 4
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        wideBox4 = new GameObject(GameObject.root(),wideBoxS, boxX);
+        initTranslation = new Matrix4f().translation(71,-4.9f,-60);
+        initScale = new Matrix4f().scale(5);
+        wideBox4.setLocalTranslation(initTranslation);
+        wideBox4.setLocalScale(initScale);
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        smallBox4 = new GameObject(wideBox4, smallBoxS, boxX);
+        initTranslation = new Matrix4f().translation(1.2f,2.5f,1.3f);
+        initScale = new Matrix4f().scale(.5f);
+
+        smallBox4.propagateRotation(false);
+        smallBox4.setLocalTranslation(initTranslation);
+        smallBox4.setLocalScale(initScale);
+
+        // wide and small box 5
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        wideBox5 = new GameObject(GameObject.root(),wideBoxS, boxX);
+        initTranslation = new Matrix4f().translation(-25,-4.9f,60);
+        initScale = new Matrix4f().scale(5);
+        wideBox5.setLocalTranslation(initTranslation);
+        wideBox5.setLocalScale(initScale);
+        wideBox5.globalYaw((float)Math.toRadians(23));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        smallBox5 = new GameObject(wideBox5, smallBoxS, boxX);
+        initTranslation = new Matrix4f().translation(1f,2.5f,1.3f);
+        initScale = new Matrix4f().scale(.5f);
+
+        smallBox5.propagateRotation(false);
+        smallBox5.setLocalTranslation(initTranslation);
+        smallBox5.setLocalScale(initScale);
+
+        //----------  making large cardboard boxes in map for cover ------------
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox1 = new GameObject(GameObject.root(),largeBoxS,boxX);
+        initTranslation = new Matrix4f().translation(128, -4.9f,83);
+        initScale = new Matrix4f().scale(10);
+
+        largeBox1.setLocalTranslation(initTranslation);
+        largeBox1.setLocalScale(initScale);
+        largeBox1.globalYaw((float)Math.toRadians(50));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox2 = new GameObject(GameObject.root(),largeBoxS,boxX);
+        initTranslation = new Matrix4f().translation(240, -4.9f,120);
+        initScale = new Matrix4f().scale(9);
+
+        largeBox2.setLocalTranslation(initTranslation);
+        largeBox2.setLocalScale(initScale);
+        largeBox2.globalYaw((float)Math.toRadians(13));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox3 = new GameObject(GameObject.root(),largeBoxS,boxX);
+        initTranslation = new Matrix4f().translation(-194, -4.9f,94);
+        initScale = new Matrix4f().scale(8);
+
+        largeBox3.setLocalTranslation(initTranslation);
+        largeBox3.setLocalScale(initScale);
+        largeBox3.globalYaw((float)Math.toRadians(70));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox4 = new GameObject(GameObject.root(),largeBoxS,boxX);
+        initTranslation = new Matrix4f().translation(79, -4.9f,51);
+        initScale = new Matrix4f().scale(9);
+
+        largeBox4.setLocalTranslation(initTranslation);
+        largeBox4.setLocalScale(initScale);
+        largeBox4.globalYaw((float)Math.toRadians(99));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        largeBox5 = new GameObject(GameObject.root(),largeBoxS,boxX);
+        initTranslation = new Matrix4f().translation(211, -4.9f,20);
+        initScale = new Matrix4f().scale(10);
+
+        largeBox5.setLocalTranslation(initTranslation);
+        largeBox5.setLocalScale(initScale);
+        largeBox5.globalYaw((float)Math.toRadians(58));
         
         //// making first set of staris
         //stairs1 = new GameObject(GameObject.root(),stairsS,stairsX);
@@ -416,9 +566,6 @@ public class MyGame extends VariableFrameRateGame{
         // ------ setting up networking before making input objects etc -----------
         setupNetworking();
 
-        for(GameObject go: engine.getSceneGraph().getGameObjects()){
-            System.out.println(go);
-        }
         // --------- initalize phyiscs system ---------
         float[] gravity = {0f,0f,0f};
         physicsEngine = (engine.getSceneGraph()).getPhysicsEngine();
@@ -489,11 +636,9 @@ public class MyGame extends VariableFrameRateGame{
 		//time between last frame and this frame in seconds
 		timeSinceLastFrame = (currFrameTime - lastFrameTime)/1000;   
         
-       // System.out.println(getStairs1Height(pAvObj.getLocalLocation().x, pAvObj.getLocalLocation().z));
         //updating camera and input manager
         engine.getInputManager().update((float)timeSinceLastFrame);
         mainCamController.updateCamera(); 
-        System.out.println(pAvObj.getWorldLocation().x + ", " + pAvObj.getWorldLocation().z);
         // -----------  Handling sprinting and stamina usage -----------
         if(!isStaminaZero){
 			//If you are sprinting it costs stamina and it regenerates half as fast as it is used. cannot go higher than 100 or less than 0
@@ -544,7 +689,6 @@ public class MyGame extends VariableFrameRateGame{
         // this is purely for updating laser positioning based on phyiscs objects movement
         for(GameObject go: engine.getSceneGraph().getGameObjects()){
             if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj && go.getPhysicsObject() != null){
-                go.getPhysicsObject().applyForce(getCameraN().x*1000, getCameraN().y*1000, getCameraN().z*1000, 0, 0, 0);
                 mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
                 mat2.set(3,0,mat.m30());
                 mat2.set(3,1,mat.m31());
@@ -585,8 +729,16 @@ public class MyGame extends VariableFrameRateGame{
         return ghostAvX;
     }
 
+    public TextureImage getNPCTextureImage(){
+        return npcX;
+    }
+
     public ObjShape getGhostObjShape(){
         return ghostAvS;
+    }
+
+    public ObjShape getNPCObjShape(){
+        return npcS;
     }
 
     public Engine getEngine(){

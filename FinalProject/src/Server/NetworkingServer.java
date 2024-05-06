@@ -6,13 +6,18 @@ import tage.networking.IGameConnection.ProtocolType;
 public class NetworkingServer 
 {
 	private GameServerUDP thisUDPServer;
+	private NPCcontroller npcCon;
 
 	public NetworkingServer(int serverPort, String protocol) {	
+		
+		npcCon = new NPCcontroller();
+
 		try{
-			thisUDPServer = new GameServerUDP(serverPort);
+			thisUDPServer = new GameServerUDP(serverPort,npcCon);
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}
+		npcCon.start(thisUDPServer, 2);
 	}
 
 	public static void main(String[] args) {	

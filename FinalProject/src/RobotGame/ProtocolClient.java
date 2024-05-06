@@ -2,10 +2,12 @@ package RobotGame;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.joml.Vector3f;
 
+import Server.NPC;
 import tage.networking.client.GameConnectionClient;
 
 // Messages are case sensitive
@@ -14,7 +16,7 @@ public class ProtocolClient extends GameConnectionClient{
 	private MyGame game;
 	private GhostManager ghostManager;
 	private UUID id;
-	
+	private ArrayList<NPC> npcList = new ArrayList<NPC>();	
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException {	
         super(remoteAddr, remotePort, protocolType);
 		this.game = game;
@@ -110,6 +112,20 @@ public class ProtocolClient extends GameConnectionClient{
 				
 				ghostManager.updateGhostAvatarPosition(ghostID, ghostPos);
 			}
+			/*
+			 * Handle createNPC messages
+			 * Format (createNPC,npcID,x,y,z)
+			 */
+			if(msgTokens[0].compareTo("createNPC")==0){
+				
+				UUID npcID = UUID.fromString(msgTokens[1]);
+				Vector3f ghostPosition = new Vector3f(
+					Float.parseFloat(msgTokens[2]),
+					Float.parseFloat(msgTokens[3]),
+					Float.parseFloat(msgTokens[4])
+				);
+				createGhostNPC(npcID,ghostPosition);
+			}
 		}
 	}
 
@@ -140,8 +156,8 @@ public class ProtocolClient extends GameConnectionClient{
 		
 			sendPacket(msg);
 
-		} catch(IOException e){
-			e.printStackTrace();
+		}catch(IOException e){
+			System.out.println("error creating npc");
 		}
 	}
 
@@ -179,5 +195,8 @@ public class ProtocolClient extends GameConnectionClient{
 		} catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	public void createGhostNPC(UUID id, Vector3f pos){
+		GhostNPC ghostNPC = new GhostNPC(id,game.getNPCObjShape(),game.getNPCTextureImage(),pos);
 	}
 }

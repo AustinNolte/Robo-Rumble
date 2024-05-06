@@ -2,6 +2,8 @@ package Server;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.UUID;
 
 import tage.networking.server.GameConnectionServer;
@@ -9,8 +11,13 @@ import tage.networking.server.IClientInfo;
 
 
 public class GameServerUDP extends GameConnectionServer<UUID> {
-	public GameServerUDP(int localPort) throws IOException {	
+	
+	// npc controller
+	private NPCcontroller npcCon;
+
+	public GameServerUDP(int localPort, NPCcontroller npcCon) throws IOException {	
 		super(localPort, ProtocolType.UDP);
+		this.npcCon = npcCon;
 	}
 
 	@Override
@@ -33,6 +40,9 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 					addClient(ci, clientID);
 					System.out.println("Join request received from - " + clientID.toString());
 					sendJoinedMessage(clientID, true);
+					System.out.println("sending createNPC messages to client " + clientID.toString());
+					sendCreateNPCMsg(clientID);
+
 					
 				} catch (IOException e){
 					e.printStackTrace();
@@ -138,7 +148,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	}
 
 	/*
-	 * Lets celitns know that a new player has joined, handles WANTS_DETAILS msg as well
+	 * Lets clients know that a new player has joined, handles WANTS_DETAILS msg as well
 	 * Format: (create,remoteID,x,y,z)
 	 */
 	
@@ -183,6 +193,32 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			forwardPacketToAll(msg, clientID);
 		}catch(IOException e){
 			e.printStackTrace();
+		}
+	}
+
+	// ----------------- NPC SECTION ---------------------- //
+
+
+	/*
+	 * Handles when server creates inital npc's, lets client know when the client joins server
+	 * format: (createNPC, npcID, x, y, z)
+	 */
+	public void sendCreateNPCMsg(UUID clientID){
+		ArrayList<NPC> npcList = npcCon.getNPCList();
+		Iterator<NPC> it = npcList.iterator();
+		NPC npc;
+		while(it.hasNext()){
+			npc = it.next();
+			try{
+				String msg = "createNPC," + npc.getId();
+				msg += "," + npc.getX();
+				msg += "," + npc.getY();
+				msg += "," + npc.getZ();
+				sendPacket(msg, clientID);
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+
 		}
 	}
 }
