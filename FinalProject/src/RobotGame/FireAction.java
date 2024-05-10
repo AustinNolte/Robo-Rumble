@@ -17,11 +17,11 @@ public class FireAction extends AbstractInputAction{
     private ProtocolClient p;
     private Matrix4f initTrans,initRot,initScale;
     private float mass = 1.0f;
-    private float up[] = {0,1,0};
     private float size[] = {1,1,1};
     private double[] tempTransform;
     private float vals[] = new float[16];
-    private float velocity[] = new float[3];
+    private float cameraNArr[] = new float[3];
+    private float cameraVArr[] = new float[3];
     
 
 
@@ -69,8 +69,19 @@ public class FireAction extends AbstractInputAction{
             game.getEngine().getSceneGraph().addNodeController(lbCont);
             lbCont.addTarget(laser);
             lbCont.enable();
+            sendFireMessage();
+            
         }
+    }
 
+    public void sendFireMessage(){
+        cameraNArr[0] = game.getCameraN().x;
+        cameraNArr[1] = game.getCameraN().y;
+        cameraNArr[2] = game.getCameraN().z;
+        cameraVArr[0] = game.getCameraV().x;
+        cameraVArr[1] = game.getCameraV().y;
+        cameraVArr[2] = game.getCameraV().z;
+        p.sendFireMessage(cameraNArr, cameraVArr);
     }
     
 }

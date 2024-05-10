@@ -8,6 +8,8 @@ import java.util.UUID;
 import org.joml.*;
 
 import tage.Engine;
+import tage.GameObject;
+import tage.nodeControllers.LaserBeamController;
 import tage.physics.PhysicsObject;
 
 
@@ -20,12 +22,16 @@ public class GhostManager {
     private float vals[] = new float[16];
     private double[] tempTransform;
     private PhysicsObject ghostAvPhysicsObj;
+    private PhysicsObject laserPhysicsObj;
+    private float sizeLaser[] = {1,1,1};
     private float mass = 1.0f;
     private float[] size = {2,5.5f,1};
 
     private Vector<GhostAvatar> gaVec = new Vector<GhostAvatar>();
     //inital scale for all ghost avatars
-    Matrix4f initalScale = new Matrix4f().scaling(.5f);
+    Matrix4f initalScale = new Matrix4f().scaling(1f);
+    Matrix4f initTrans,initRot,initScale;
+
 
     public GhostManager(MyGame game) {
         this.game = game;
@@ -83,7 +89,7 @@ public class GhostManager {
         if(ga == null){
             System.out.println("Failed to rotate GhostAvatar with ID: " + id + " because it does not exist");
         }else{
-            // updating position
+            // updating rotation
             ga.setLocalRotation(rotation);
         }
     }
@@ -107,5 +113,41 @@ public class GhostManager {
             }
         }
         return null;
+    }
+
+    public void shootLaser(UUID id, Vector3f cameraN, Vector3f cameraV){
+            GhostAvatar ga = findAvatar(id);
+            
+            if(ga == null){
+                System.out.println("Failed to fire laser from GhostAvatar with ID: " + id + " because it does not exist");
+            }
+            // creating laser object
+            GameObject laser = new GameObject(GameObject.root(),game.getLaserShape(),game.getLaserImage());
+            initTrans = new Matrix4f().identity();
+            initRot = new Matrix4f().identity();
+            initScale = new Matrix4f().identity();
+            
+            initTrans.translate(ga.getWorldLocation().add(game.getAvatar().getLocalForwardVector().x*2,5.5f,game.getAvatar().getLocalForwardVector().z*2));
+            initRot.lookAlong(cameraN.mul(-1), cameraV);
+            initScale.scale(.05f,.05f,1f);
+
+            laser.setLocalTranslation(initTrans);
+            laser.setLocalRotation(initRot);
+            laser.setLocalScale(initScale);
+
+            // creating laser physics object
+            Matrix4f translation = new Matrix4f(laser.getLocalTranslation());
+            translation.mul(initRot);
+            tempTransform = game.toDoubleArray(translation.get(vals));
+            laserPhysicsObj = (game.getEngine().getSceneGraph()).addPhysicsBox(mass,tempTransform, sizeLaser);
+            
+            
+            laser.setPhysicsObject(laserPhysicsObj);
+            laser.getPhysicsObject().applyForce(cameraN.x*-10000, cameraN.y*-10000, cameraN.z*-10000, 0, 0, 0);
+
+            LaserBeamController lbCont = new LaserBeamController(game.getEngine());
+            game.getEngine().getSceneGraph().addNodeController(lbCont);
+            lbCont.addTarget(laser);
+            lbCont.enable();
     }
 }

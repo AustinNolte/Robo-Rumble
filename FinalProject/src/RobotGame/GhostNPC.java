@@ -9,10 +9,10 @@ import tage.*;
 
 // texture and shape are loaded in during startup
 
-public class GhostNPC extends GameObject{
+public class GhostNPC extends PlayerCharacter{
     private UUID id;
     public GhostNPC(UUID id, ObjShape s, TextureImage t, Vector3f p){
-        super(GameObject.root(),s,t);
+        super(GameObject.root(),s,t,100f);
         this.id = id;
         setLocalLocation(p);
         setLocalScale(new Matrix4f().scale(10));

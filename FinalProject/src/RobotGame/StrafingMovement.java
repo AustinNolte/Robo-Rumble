@@ -10,6 +10,7 @@ public class StrafingMovement extends AbstractInputAction{
     
     private MyGame myGame;
     private ProtocolClient p;
+    float[] rotValues = new float[9];
 
     public StrafingMovement(MyGame myGame, ProtocolClient p){
         this.myGame = myGame;
@@ -50,16 +51,16 @@ public class StrafingMovement extends AbstractInputAction{
             if(newLocVec.z > 273){
                 newLocVec.z = 273;
             }
-            if(newLocVec.z > 273){
+            if(newLocVec.z < -273){
                 newLocVec.z = -273;
             }
 
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
-
             myGame.getAvatar().setLocalLocation(newLocVec);
-            //if(Math.toDegrees(angleSigned) < 90)
+            
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+                sendRotateMessage();
             }
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
@@ -87,7 +88,7 @@ public class StrafingMovement extends AbstractInputAction{
             if(newLocVec.z > 273){
                 newLocVec.z = 273;
             }
-            if(newLocVec.z > 273){
+            if(newLocVec.z < -273){
                 newLocVec.z = -273;
             }
 
@@ -96,6 +97,7 @@ public class StrafingMovement extends AbstractInputAction{
             myGame.getAvatar().setLocalLocation(newLocVec);
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+                sendRotateMessage();
             }
 
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
@@ -125,7 +127,7 @@ public class StrafingMovement extends AbstractInputAction{
             if(newLocVec.z > 273){
                 newLocVec.z = 273;
             }
-            if(newLocVec.z > 273){
+            if(newLocVec.z < -273){
                 newLocVec.z = -273;
             }
 
@@ -136,8 +138,21 @@ public class StrafingMovement extends AbstractInputAction{
             //if(Math.toDegrees(angleSigned) < 90)
             if(!(myGame.isAiming())){
                 myGame.getAvatar().globalYaw(angleSigned*3);
+                sendRotateMessage();
             }
-            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());;
+            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         }
+    }
+    public void sendRotateMessage(){
+        rotValues[0] = myGame.getAvatar().getLocalRotation().m00();
+        rotValues[1] = myGame.getAvatar().getLocalRotation().m10();
+        rotValues[2] = myGame.getAvatar().getLocalRotation().m20();
+        rotValues[3] = myGame.getAvatar().getLocalRotation().m01();
+        rotValues[4] = myGame.getAvatar().getLocalRotation().m11();
+        rotValues[5] = myGame.getAvatar().getLocalRotation().m21();
+        rotValues[6] = myGame.getAvatar().getLocalRotation().m02();
+        rotValues[7] = myGame.getAvatar().getLocalRotation().m12();
+        rotValues[8] = myGame.getAvatar().getLocalRotation().m22();
+        p.sendRotateMessage(rotValues);
     }
 }

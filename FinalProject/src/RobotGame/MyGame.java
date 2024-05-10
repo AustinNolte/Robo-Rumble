@@ -25,14 +25,15 @@ import org.joml.*;
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X, only one animated shape so it is just pAS for player Animated Shape
-    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS,laserBeamS, fenceS, largeBoxS, wideBoxS, longBoxS, smallBoxS, npcS;
-    private GameObject ghostAvObj,pAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2; 
+    private ObjShape ghostAvS,pAvS,xAxisS,yAxisS,zAxisS,groundPlaneS,stairsS,laserBeamS, fenceS, largeBoxS, wideBoxS, longBoxS, smallBoxS, npcS, myHouseS,myLampPostS;
+    private GameObject ghostAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj,stairs1,stairs2, myHouse, myLampPost1, myLampPost2, myLampPost3, myLampPost4, testLight; 
+    private PlayerCharacter pAvObj;
     private GameObject largeBox1, largeBox2, largeBox3, largeBox4, largeBox5;
     private GameObject smallBox1, smallBox2, smallBox3, smallBox4, smallBox5;
     private GameObject wideBox1, wideBox2, wideBox3, wideBox4, wideBox5;
     private GameObject longBox1, longBox2, longBox3, longBox4, longBox5;
-    private TextureImage ghostAvX,pAvX,groundPlaneX,stairsHeightMap,stairsX, laserBeamX, fenceX, boxX, npcX;
-    private AnimatedShape pAS;
+    private TextureImage ghostAvX,pAvX,groundPlaneX,stairsHeightMap,stairsX, laserBeamX, fenceX, boxX, npcX, myHouseX, myLampPostX;
+    private AnimatedShape pAS, gAS;
 
     // phyiscs objects and engine
     private PhysicsEngine physicsEngine;
@@ -52,7 +53,7 @@ public class MyGame extends VariableFrameRateGame{
     private float characterAdjust = 2.88f;
     
     
-    private Light light1;
+    private Light light1,lampPost1Light, lampPost2Light,lampPost3Light,lampPost4Light;
     private boolean isSprinting = false;
 
     //game timings
@@ -116,7 +117,7 @@ public class MyGame extends VariableFrameRateGame{
     
     @Override
     public void loadSkyBoxes(){
-        customSkyBox = (engine.getSceneGraph()).loadCubeMap("customSkybox");
+        customSkyBox = (engine.getSceneGraph()).loadCubeMap("customSkybox1");
         (engine.getSceneGraph()).setActiveSkyBoxTexture(customSkyBox);
         (engine.getSceneGraph()).setSkyBoxEnabled(true);
     }
@@ -137,6 +138,9 @@ public class MyGame extends VariableFrameRateGame{
         pAS = new AnimatedShape("robotMesh.rkm", "robotSkeleton.rks");
         pAS.loadAnimation("Walk", "ForwardWalk.rka");
 
+        gAS = new AnimatedShape("robotMesh.rkm", "robotSkeleton.rks");
+        gAS.loadAnimation("WALK", "ForwardWalk.rka");
+
         ghostAvS = new Cube();
         xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
         yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
@@ -145,6 +149,10 @@ public class MyGame extends VariableFrameRateGame{
         stairsS = new TerrainPlane(1000);   
 
         npcS = new Cube();
+
+        myHouseS = new ImportedModel("myHouse.obj");
+
+        myLampPostS = new ImportedModel("myLampPost.obj");
 
         laserBeamS = new Cube();
 
@@ -160,7 +168,7 @@ public class MyGame extends VariableFrameRateGame{
     public void loadTextures() {
         
         pAvX = new TextureImage("robot.png");
-        ghostAvX = new TextureImage("CustomTexture2 - Camoflage.png");
+        ghostAvX = new TextureImage("robot.png");
         
         groundPlaneX = new TextureImage("test2.png");
 
@@ -174,6 +182,10 @@ public class MyGame extends VariableFrameRateGame{
         boxX = new TextureImage("variation-a.png");
 
         npcX = new TextureImage("CustomTexture1 - Cracked bricks.png");
+
+        myHouseX = new TextureImage("myHouse.png");
+        
+        myLampPostX = new TextureImage("myLampPost.png");
     }
 
     @Override
@@ -182,6 +194,13 @@ public class MyGame extends VariableFrameRateGame{
         
         initTranslation = new Matrix4f().identity();
 		initScale = new Matrix4f().identity();
+        // making house
+        myHouse = new GameObject(GameObject.root(),myHouseS,myHouseX);
+        initTranslation = new Matrix4f().translation(0,-4.5f,-300);
+        initScale = new Matrix4f().scale(10);
+        myHouse.setLocalTranslation(initTranslation);
+        myHouse.setLocalScale(initScale);
+        myHouse.getRenderStates().setModelOrientationCorrection(new Matrix4f().rotateX((float)Math.toRadians(90)));
 
         //making x,y,z axis
 		xAxisObj = new GameObject(GameObject.root(),xAxisS);
@@ -194,8 +213,8 @@ public class MyGame extends VariableFrameRateGame{
 		zAxisObj = new GameObject(GameObject.root(),zAxisS);
 		zAxisObj.getRenderStates().setColor(new Vector3f(0,0,1));
         
-        //making temp player obj
-        pAvObj = new GameObject(GameObject.root(), pAS, pAvX);
+        //making player obj
+        pAvObj = new PlayerCharacter(GameObject.root(), pAS, pAvX, 100f);
         initTranslation = new Matrix4f().translation(0,-4.8f,0);
 		pAvObj.setLocalTranslation(initTranslation);
 
@@ -265,7 +284,7 @@ public class MyGame extends VariableFrameRateGame{
             fence.setLocalScale(initScale);
             fence.globalYaw((float)Math.toRadians(90));
         }
-        // making world positive z axis
+        // making world border positive z axis
         for(int i = 0; i<6; i++){
             initTranslation = new Matrix4f().identity();
             initScale = new Matrix4f().identity();
@@ -287,14 +306,14 @@ public class MyGame extends VariableFrameRateGame{
             fence.setLocalScale(initScale);
         }
 
-        // making world negative z axis
+        // making world border negative z axis
         for(int i = 0; i<6; i++){
             initTranslation = new Matrix4f().identity();
             initScale = new Matrix4f().identity();
             
             GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
             initTranslation = new Matrix4f().translation(i * 50,-4.9f,-275);
-            initScale = new Matrix4f().scale(100,10,50);
+            initScale = new Matrix4f().scale(50,10,25);
             fence.setLocalTranslation(initTranslation);
             fence.setLocalScale(initScale);
         }
@@ -304,10 +323,62 @@ public class MyGame extends VariableFrameRateGame{
             
             GameObject fence = new GameObject(GameObject.root(),fenceS,fenceX);
             initTranslation = new Matrix4f().translation(i * -50,-4.9f,-275);
-            initScale = new Matrix4f().scale(100,10,50);
+            initScale = new Matrix4f().scale(50,10,25);
             fence.setLocalTranslation(initTranslation);
             fence.setLocalScale(initScale);
         }
+
+        // making lamp posts, one in each corner of the fence barrier
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+        initRot = new Matrix4f().identity();
+
+        GameObject myLampPost1 = new GameObject(GameObject.root(),myLampPostS,myLampPostX);
+        initTranslation = new Matrix4f().translation(280,-4.9f,280);
+        initScale = new Matrix4f().scale(2);
+        initRot = new Matrix4f().rotateX((float)Math.toRadians(90));
+        myLampPost1.getRenderStates().setModelOrientationCorrection(initRot);
+        myLampPost1.setLocalTranslation(initTranslation);
+        myLampPost1.setLocalScale(initScale);
+        myLampPost1.globalYaw((float)Math.toRadians(135));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        GameObject myLampPost2 = new GameObject(GameObject.root(),myLampPostS,myLampPostX);
+        initTranslation = new Matrix4f().translation(-280,-4.9f,280);
+        initScale = new Matrix4f().scale(2);
+        initRot = new Matrix4f().rotateX((float)Math.toRadians(90));
+        myLampPost2.getRenderStates().setModelOrientationCorrection(initRot);
+        myLampPost2.setLocalTranslation(initTranslation);
+        myLampPost2.setLocalScale(initScale);
+        myLampPost2.globalYaw((float)Math.toRadians(45));
+
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        GameObject myLampPost3 = new GameObject(GameObject.root(),myLampPostS,myLampPostX);
+        initTranslation = new Matrix4f().translation(-280,-4.9f,-280);
+        initScale = new Matrix4f().scale(2);
+        initRot = new Matrix4f().rotateX((float)Math.toRadians(90));
+        myLampPost3.getRenderStates().setModelOrientationCorrection(initRot);
+        myLampPost3.setLocalTranslation(initTranslation);
+        myLampPost3.setLocalScale(initScale);
+        myLampPost3.globalYaw((float)Math.toRadians(-45));
+
+        initTranslation = new Matrix4f().identity();
+        initScale = new Matrix4f().identity();
+
+        GameObject myLampPost4 = new GameObject(GameObject.root(),myLampPostS,myLampPostX);
+        initTranslation = new Matrix4f().translation(280,-4.9f,-280);
+        initScale = new Matrix4f().scale(2);
+        initRot = new Matrix4f().rotateX((float)Math.toRadians(90));
+        myLampPost4.getRenderStates().setModelOrientationCorrection(initRot);
+        myLampPost4.setLocalTranslation(initTranslation);
+        myLampPost4.setLocalScale(initScale);
+        myLampPost4.globalYaw((float)Math.toRadians(-135));
+        
         
         initTranslation = new Matrix4f().identity();
         initScale = new Matrix4f().identity();
@@ -545,11 +616,32 @@ public class MyGame extends VariableFrameRateGame{
     public void initializeLights() {
         //global ambient light will be a little less than full white
 		Light.setGlobalAmbient(.8f, .8f, .8f);
-		light1 = new Light();
-		light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
+		//light1 = new Light();
+		//light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
 		//positional ambient light will be set to a custom rgb value I made, the RGB value in ints is 171,188,237
-		light1.setAmbient(.67f, .73f, .93f);
-		(engine.getSceneGraph()).addLight(light1);
+		//light1.setAmbient(.67f, .73f, .93f);
+		//(engine.getSceneGraph()).addLight(light1);
+
+        // --------- Adding lamp post lights -----------//
+        lampPost1Light = new Light();
+        lampPost1Light.setLocation(new Vector3f(277,5.2f,277));
+        lampPost1Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+        (engine.getSceneGraph()).addLight(lampPost1Light);
+
+        lampPost2Light = new Light();
+        lampPost2Light.setLocation(new Vector3f(-277,5.2f,277));
+        lampPost2Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+        (engine.getSceneGraph()).addLight(lampPost2Light);
+
+        lampPost3Light = new Light();
+        lampPost3Light.setLocation(new Vector3f(-277,5.2f,-277));
+        lampPost3Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+        (engine.getSceneGraph()).addLight(lampPost3Light);
+
+        lampPost4Light = new Light();
+        lampPost4Light.setLocation(new Vector3f(277,5.2f,-277));
+        lampPost4Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+        (engine.getSceneGraph()).addLight(lampPost4Light);
     }
 
     @Override
@@ -606,7 +698,7 @@ public class MyGame extends VariableFrameRateGame{
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, FM, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
         // ----------- Input for hold to sprint ------
-        engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Key.LSHIFT, GSA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
+        engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.LSHIFT, GSA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
         engine.getInputManager().associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._8, GSA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
         // ----------- Strafing left and right Movement of avatar ------
@@ -619,7 +711,6 @@ public class MyGame extends VariableFrameRateGame{
         engine.getInputManager().associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.Y, fA, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
         // ------------- setting up sound parameters --------------
-
 
     }
 
@@ -661,7 +752,6 @@ public class MyGame extends VariableFrameRateGame{
 				isStaminaZero = false;
 			}
 		}
-        
         if(isAiming){
             forwardVec = ((new Vector3f(0,1,0)).cross(getCameraU())).normalize();
             angleSigned = (float) (forwardVec.angleSigned((getAvatar().getLocalForwardVector()).mul(-1), new Vector3f(0,1,0))*timeSinceLastFrame);
@@ -680,7 +770,7 @@ public class MyGame extends VariableFrameRateGame{
         mat3 = new Matrix4f().identity();
         Matrix4f translation = new Matrix4f().identity();
         
-        physicsEngine.update((float)timeSinceLastFrame*1000);
+        physicsEngine.update((float)timeSinceLastFrame*10000);
         
         translation = new Matrix4f(pAvObj.getLocalTranslation());
         tempTransform = toDoubleArray(translation.get(vals));
@@ -734,7 +824,7 @@ public class MyGame extends VariableFrameRateGame{
     }
 
     public ObjShape getGhostObjShape(){
-        return ghostAvS;
+        return gAS;
     }
 
     public ObjShape getNPCObjShape(){
@@ -781,6 +871,15 @@ public class MyGame extends VariableFrameRateGame{
     public AnimatedShape getPlayerSkeleton(){
         return pAS;
     }
+
+    public ObjShape getLaserShape(){
+        return laserBeamS;
+    }
+
+    public TextureImage getLaserImage(){
+        return laserBeamX;
+    }
+    
     // ------------- Networking part ------------
 
     public void setupNetworking(){
@@ -818,7 +917,24 @@ public class MyGame extends VariableFrameRateGame{
         switch(e.getKeyCode()){
             case KeyEvent.VK_1: engine.enablePhysicsWorldRender(); break;
             case KeyEvent.VK_2: engine.disablePhysicsWorldRender(); break;
+            // turn off lights
+            case KeyEvent.VK_5:{ 
+                lampPost1Light.setLocation(new Vector3f(0,-10000,0));
+                lampPost2Light.setLocation(new Vector3f(0,-10000,0));
+                lampPost3Light.setLocation(new Vector3f(0,-10000,0));
+                lampPost4Light.setLocation(new Vector3f(0,-10000,0));
+                break;
+            }
+            // turn lights back on
+            case KeyEvent.VK_6:{
+                lampPost1Light.setLocation(new Vector3f(277,5.2f,277));
+                lampPost2Light.setLocation(new Vector3f(-277,5.2f,277));
+                lampPost3Light.setLocation(new Vector3f(-277,5.2f,-277));
+                lampPost4Light.setLocation(new Vector3f(277,5.2f,-277));
+                break;
+            }
         }
+
         super.keyPressed(e);
     }
 
