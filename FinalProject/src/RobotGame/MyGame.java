@@ -15,10 +15,12 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
 import java.lang.Math;
 
 import org.joml.*;
+
+import Server.NPC;
 
 
 
@@ -78,9 +80,8 @@ public class MyGame extends VariableFrameRateGame{
     private int serverPort;
     private ProtocolType serverProtocol;
     private ProtocolClient protClient;
-    private boolean isClientConneted = false;
+    private boolean isClientConnected = false;
     private boolean isSinglePlayer = true;
-    private boolean isAiming = false;
 
 
     // constructor for if in multiplayer
@@ -101,6 +102,7 @@ public class MyGame extends VariableFrameRateGame{
     public MyGame(){
         super();
         isSinglePlayer = true;
+        isClientConnected = false;
     }
 
     public static void main(String[] args){
@@ -656,10 +658,12 @@ public class MyGame extends VariableFrameRateGame{
         (engine.getRenderSystem()).setWindowDimensions(1280,720);
 
         // ------ setting up networking before making input objects etc -----------
-        setupNetworking();
+        if(!isSinglePlayer){
+            setupNetworking();
+        }
 
         // --------- initalize phyiscs system ---------
-        float[] gravity = {0f,0f,0f};
+        float[] gravity = {0f,-5f,0f};
         physicsEngine = (engine.getSceneGraph()).getPhysicsEngine();
         physicsEngine.setGravity(gravity);
         
@@ -751,13 +755,7 @@ public class MyGame extends VariableFrameRateGame{
 			}else{
 				isStaminaZero = false;
 			}
-		}
-        if(isAiming){
-            forwardVec = ((new Vector3f(0,1,0)).cross(getCameraU())).normalize();
-            angleSigned = (float) (forwardVec.angleSigned((getAvatar().getLocalForwardVector()).mul(-1), new Vector3f(0,1,0))*timeSinceLastFrame);
-            pAvObj.globalYaw(angleSigned*3);
-        }
-        
+		}   
         // ----- player animation update -----
         pAS.updateAnimation();
 
@@ -768,14 +766,13 @@ public class MyGame extends VariableFrameRateGame{
         mat = new Matrix4f().identity();
         mat2 = new Matrix4f().identity();
         mat3 = new Matrix4f().identity();
-        Matrix4f translation = new Matrix4f().identity();
+        Matrix4f physicsMatrix = new Matrix4f().identity();
         
         physicsEngine.update((float)timeSinceLastFrame*10000);
         
-        translation = new Matrix4f(pAvObj.getLocalTranslation());
-        tempTransform = toDoubleArray(translation.get(vals));
+        physicsMatrix = new Matrix4f().identity().translate(pAvObj.getLocalLocation().add(0,characterAdjust,0)).mul(pAvObj.getLocalRotation());
+        tempTransform = toDoubleArray(physicsMatrix.get(vals));
         pAvObj.getPhysicsObject().setTransform(tempTransform);
-                
         // this is purely for updating laser positioning based on phyiscs objects movement
         for(GameObject go: engine.getSceneGraph().getGameObjects()){
             if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj && go.getPhysicsObject() != null){
@@ -786,15 +783,24 @@ public class MyGame extends VariableFrameRateGame{
                 go.setLocalTranslation(mat2);
             }
         }
-        ghostAvObj = gm.getGhostAvatar();
-        if(ghostAvObj != null){
-            translation = new Matrix4f(ghostAvObj.getLocalTranslation());
-            tempTransform = toDoubleArray(translation.get(vals));
-            ghostAvObj.getPhysicsObject().setTransform(tempTransform);
+        if(!isSinglePlayer){
+            ghostAvObj = gm.getGhostAvatar();
+            if(ghostAvObj != null){
+                physicsMatrix = new Matrix4f(ghostAvObj.getLocalTranslation());
+                tempTransform = toDoubleArray(physicsMatrix.get(vals));
+                ghostAvObj.getPhysicsObject().setTransform(tempTransform);
+            }
         }
+
+        for(GhostNPC gnpc : gm.getNPCList()){
+            protClient.sendIsNearMessage();
+        }
+
+
         
-        
-        processNetworking((float)elapsedTime);
+        if(!isSinglePlayer){
+            processNetworking((float)elapsedTime);
+        }
     }
     
     public GameObject getAvatar(){
@@ -847,22 +853,10 @@ public class MyGame extends VariableFrameRateGame{
         return mainCamController.getCameraV();
     }
 
-    public float getStairs1Height(float x, float z){
+    public float getTerrainHeight(float x, float z){
         return -5;
         //return stairs1.getHeight(x, z);
-    }
-
-    public float getStairs2Height(float x, float z){
-        return stairs2.getHeight(x, z);
-    }
-    
-    public void setIsAiming(boolean isAiming){
-        this.isAiming = isAiming;
-    }
-
-    public boolean isAiming(){
-        return isAiming;
-    }
+    }  
 
     public float getCharacterAdjust(){
         return characterAdjust;
@@ -883,7 +877,7 @@ public class MyGame extends VariableFrameRateGame{
     // ------------- Networking part ------------
 
     public void setupNetworking(){
-        isClientConneted = false;
+        isClientConnected = false;
 
         try{
             protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
@@ -909,7 +903,7 @@ public class MyGame extends VariableFrameRateGame{
     }
 
     public void setIsConnected(boolean isClientConnected){
-        this.isClientConneted = isClientConnected;
+        this.isClientConnected = isClientConnected;
     }
     
     @Override
@@ -919,18 +913,34 @@ public class MyGame extends VariableFrameRateGame{
             case KeyEvent.VK_2: engine.disablePhysicsWorldRender(); break;
             // turn off lights
             case KeyEvent.VK_5:{ 
-                lampPost1Light.setLocation(new Vector3f(0,-10000,0));
-                lampPost2Light.setLocation(new Vector3f(0,-10000,0));
-                lampPost3Light.setLocation(new Vector3f(0,-10000,0));
-                lampPost4Light.setLocation(new Vector3f(0,-10000,0));
+                lampPost1Light.setAmbient(0, 0, 0);
+                lampPost1Light.setDiffuse(0, 0, 0);
+                lampPost1Light.setSpecular(0, 0, 0);
+                lampPost2Light.setAmbient(0, 0, 0);
+                lampPost2Light.setDiffuse(0, 0, 0);
+                lampPost2Light.setSpecular(0, 0, 0);
+                lampPost3Light.setAmbient(0, 0, 0);
+                lampPost3Light.setDiffuse(0, 0, 0);
+                lampPost3Light.setSpecular(0, 0, 0);
+                lampPost4Light.setAmbient(0, 0, 0);
+                lampPost4Light.setDiffuse(0, 0, 0);
+                lampPost4Light.setSpecular(0, 0, 0);
                 break;
             }
             // turn lights back on
             case KeyEvent.VK_6:{
-                lampPost1Light.setLocation(new Vector3f(277,5.2f,277));
-                lampPost2Light.setLocation(new Vector3f(-277,5.2f,277));
-                lampPost3Light.setLocation(new Vector3f(-277,5.2f,-277));
-                lampPost4Light.setLocation(new Vector3f(277,5.2f,-277));
+                lampPost1Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+                lampPost1Light.setDiffuse(0.8f, 0.8f, 0.8f);
+                lampPost1Light.setSpecular(1.0f, 1.0f, 1.0f);
+                lampPost1Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+                lampPost2Light.setDiffuse(0.8f, 0.8f, 0.8f);
+                lampPost2Light.setSpecular(1.0f, 1.0f, 1.0f);
+                lampPost1Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+                lampPost3Light.setDiffuse(0.8f, 0.8f, 0.8f);
+                lampPost3Light.setSpecular(1.0f, 1.0f, 1.0f);
+                lampPost1Light.setAmbient(247f/255f, 250f/255f, 187f/255f);
+                lampPost4Light.setDiffuse(0.8f, 0.8f, 0.8f);
+                lampPost4Light.setSpecular(1.0f, 1.0f, 1.0f);
                 break;
             }
         }

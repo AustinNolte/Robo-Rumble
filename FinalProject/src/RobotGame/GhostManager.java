@@ -2,6 +2,7 @@ package RobotGame;
 
 import java.io.IOException;
 import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -28,6 +29,8 @@ public class GhostManager {
     private float[] size = {2,5.5f,1};
 
     private Vector<GhostAvatar> gaVec = new Vector<GhostAvatar>();
+    private Vector<GhostNPC> gnpcVec = new Vector<GhostNPC>();
+
     //inital scale for all ghost avatars
     Matrix4f initalScale = new Matrix4f().scaling(1f);
     Matrix4f initTrans,initRot,initScale;
@@ -58,6 +61,33 @@ public class GhostManager {
 
         //adding to the vector of ga
         gaVec.add(newA);
+    }
+
+    public void createGhostNPC(UUID id, Vector3f position)throws IOException{
+        System.out.println("Creating a ghostNPC with ID: " + id);
+
+        // creating ghost NPC
+        GhostNPC newGhostNPC = new GhostNPC(id,game.getNPCObjShape(),game.getNPCTextureImage(),position);
+
+        // --------- Adding Phyiscs Objects  --------------
+        
+
+        
+        Matrix4f translation = new Matrix4f(newGhostNPC.getLocalTranslation());
+        tempTransform = game.toDoubleArray(translation.get(vals));
+        ghostAvPhysicsObj = ((game.getEngine()).getSceneGraph()).addPhysicsBox(mass, tempTransform, size);
+
+        newGhostNPC.setPhysicsObject(ghostAvPhysicsObj);
+
+        // scaling to be same scaling as player avatar
+        newGhostNPC.setLocalScale(initalScale);
+
+        //adding to the vector of ga
+        gnpcVec.add(newGhostNPC);
+    }
+
+    public Vector<GhostNPC> getNPCList(){
+        return gnpcVec;
     }
 
     public void removeGhostAvatar(UUID id){
@@ -109,6 +139,28 @@ public class GhostManager {
         while(it.hasNext()){
             ga = it.next();
             if(ga.getID().compareTo(id) == 0){
+                return ga;
+            }
+        }
+        return null;
+    }
+
+    public void updateNPCLocation(UUID id, Vector3f position){
+        GhostNPC ga = findNPC(id);
+        
+        if(ga == null){
+            System.out.println("Failed to udpate ghostNPC with ID: " + id + " because it does not exist");
+        }else{
+            // updating position
+            ga.setLocalLocation(position);
+        }
+    }
+    private GhostNPC findNPC(UUID id){
+        GhostNPC ga;
+        Iterator<GhostNPC> it = gnpcVec.iterator();
+        while(it.hasNext()){
+            ga = it.next();
+            if(ga.getId().compareTo(id) == 0){
                 return ga;
             }
         }

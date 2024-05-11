@@ -35,8 +35,8 @@ public class StrafingMovement extends AbstractInputAction{
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
    
             // accounting for terrain or stairs
-            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+            if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+            y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
             }else{
                 y = oldLocVec.y;
             }
@@ -56,12 +56,9 @@ public class StrafingMovement extends AbstractInputAction{
             }
 
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
-            myGame.getAvatar().setLocalLocation(newLocVec);
-            
-            if(!(myGame.isAiming())){
-                myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-            }
+            myGame.getAvatar().setLocalLocation(newLocVec);   
+            myGame.getAvatar().globalYaw(angleSigned*3);
+            sendRotateMessage();
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("A")){
@@ -72,8 +69,8 @@ public class StrafingMovement extends AbstractInputAction{
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
             
             // accounting for terrain or stairs
-            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+            if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
             }else{
                 y = oldLocVec.y;
             }
@@ -95,10 +92,8 @@ public class StrafingMovement extends AbstractInputAction{
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
 
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(!(myGame.isAiming())){
-                myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-            }
+            myGame.getAvatar().globalYaw(angleSigned*3);
+            sendRotateMessage();
 
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         
@@ -111,8 +106,8 @@ public class StrafingMovement extends AbstractInputAction{
             angleSigned = (rightVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
 
             // accounting for terrain or stairs
-            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-            y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+            if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+            y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
             }else{
                 y = oldLocVec.y;
             }
@@ -135,11 +130,8 @@ public class StrafingMovement extends AbstractInputAction{
 
                            
             myGame.getAvatar().setLocalLocation(newLocVec);
-            //if(Math.toDegrees(angleSigned) < 90)
-            if(!(myGame.isAiming())){
-                myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-            }
+            myGame.getAvatar().globalYaw(angleSigned*3);
+            sendRotateMessage();
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
         }
     }

@@ -3,6 +3,7 @@ package Server;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -23,7 +24,6 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	@Override
 	public void processPacket(Object o, InetAddress senderIP, int senderPort){
 		String msg = (String)o;
-
 		String[] msgTokens = msg.split(",");
 
 
@@ -109,6 +109,18 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				String[] cameraN = {msgTokens[2],msgTokens[3],msgTokens[4]};
 				String[] cameraV = {msgTokens[5],msgTokens[5],msgTokens[7]};
 				sendFireMessage(clientID, cameraN, cameraV);
+			}
+
+			/*
+			 * handle near msg -- server receives near msg from client if they are close to an npc
+			 * 
+			 * Coming in format: (dist,localghostID,npcID,distance(float))
+			 */
+			if(msgTokens[0].compareTo("dist")==0){
+				UUID clientID = UUID.fromString(msgTokens[1]);
+				UUID npcID = UUID.fromString(msgTokens[2]);
+				float distance = Float.parseFloat(msgTokens[3]);
+				npcCon.setDistance(npcID, clientID, distance);
 			}
 		}
 	}
@@ -279,6 +291,23 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				e.printStackTrace();
 			}
 
+		}
+	}
+	/*
+	 * Handles when server needs to update clients about how npc have moved
+	 * format: (npcMov,npcID,x,y,z)
+	 */
+	public void sendNPCInfo(){
+		for(NPC npc: npcCon.getNPCList()){
+			try{
+				String msg = "npcMov," + npc.getId();
+				msg += "," + npc.getX();
+				msg += "," + npc.getY();
+				msg += "," + npc.getZ();
+				sendPacketToAll(msg);
+			}catch(IOException e){
+				e.printStackTrace();
+			}
 		}
 	}
 }

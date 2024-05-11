@@ -34,8 +34,8 @@ public class ForwardMovement extends AbstractInputAction{
             oldLocVec = myGame.getAvatar().getWorldLocation();
             newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time)));
             // accounting for terrain or stairs
-            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+            if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
             }else{
                 y = oldLocVec.y;
             }
@@ -55,11 +55,9 @@ public class ForwardMovement extends AbstractInputAction{
             newLocVec.set(newLocVec.x, y  ,newLocVec.z);
             
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(!(myGame.isAiming())){
-                myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
+            myGame.getAvatar().globalYaw(angleSigned*3);
+            sendRotateMessage();
                 
-            }
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             
 
@@ -71,8 +69,8 @@ public class ForwardMovement extends AbstractInputAction{
             newLocVec = (oldLocVec.add(forwardVec.mul(-10*time)));
             
             // accounting for terrain or stairs
-            if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+            if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
             }else{
                 y = oldLocVec.y;
             }
@@ -92,10 +90,8 @@ public class ForwardMovement extends AbstractInputAction{
             newLocVec.set(newLocVec.x, y ,newLocVec.z);
             
             myGame.getAvatar().setLocalLocation(newLocVec);
-            if(!(myGame.isAiming())){
-                myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-            }
+            myGame.getAvatar().globalYaw(angleSigned*3);
+            sendRotateMessage();
             p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             
         // deadzoning 
@@ -108,8 +104,8 @@ public class ForwardMovement extends AbstractInputAction{
                 newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time*evtValue)));
                 
                 // accounting for terrain or stairs
-                if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+                if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
                 }else{
                     y = oldLocVec.y;
                 }
@@ -130,10 +126,8 @@ public class ForwardMovement extends AbstractInputAction{
 
                 newLocVec.set(newLocVec.x, y ,newLocVec.z);
                 myGame.getAvatar().setLocalLocation(newLocVec);
-                if(!(myGame.isAiming())){
-                    myGame.getAvatar().globalYaw(angleSigned*3);
-                    sendRotateMessage();
-                }
+                myGame.getAvatar().globalYaw(angleSigned*3);
+                sendRotateMessage();
                 p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }else{
                 // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
@@ -148,8 +142,8 @@ public class ForwardMovement extends AbstractInputAction{
                 oldLocVec = myGame.getAvatar().getWorldLocation();
                 newLocVec = (oldLocVec.add(forwardVec.mul(10*time*evtValue)));
                 // accounting for terrain or stairs
-                if(myGame.getStairs1Height(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getStairs1Height(newLocVec.x,newLocVec.z);
+                if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
+                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
                 }else{
                     y = oldLocVec.y;
                 }
@@ -171,10 +165,8 @@ public class ForwardMovement extends AbstractInputAction{
                 newLocVec.set(newLocVec.x, y , newLocVec.z);
 
                 myGame.getAvatar().setLocalLocation(newLocVec);
-                if(!(myGame.isAiming())){
-                    myGame.getAvatar().globalYaw(angleSigned*3);
-                    sendRotateMessage();
-                }
+                myGame.getAvatar().globalYaw(angleSigned*3);
+                sendRotateMessage();
                 p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
             }
         }

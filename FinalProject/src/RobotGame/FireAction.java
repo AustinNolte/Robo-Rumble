@@ -37,10 +37,10 @@ public class FireAction extends AbstractInputAction{
     @Override
     public void performAction(float time, Event evt) {
         float evtValue = evt.getValue() * -1;
-       
-
         // adding deadzoning to right trigger, only works with right trigger
         if(evtValue >= 0.99f || evt.getComponent().toString().equalsIgnoreCase("Y")){
+             
+
             // creating laser object
             GameObject laser = new GameObject(GameObject.root(),laserShape,laserImage);
             initTrans = new Matrix4f().identity();

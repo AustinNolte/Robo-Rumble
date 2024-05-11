@@ -3,7 +3,9 @@ package RobotGame;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.UUID;
+import java.util.Vector;
 
 import org.joml.*;
 
@@ -16,7 +18,7 @@ public class ProtocolClient extends GameConnectionClient{
 	private MyGame game;
 	private GhostManager ghostManager;
 	private UUID id;
-	private ArrayList<NPC> npcList = new ArrayList<NPC>();	
+
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException {	
         super(remoteAddr, remotePort, protocolType);
 		this.game = game;
@@ -31,11 +33,9 @@ public class ProtocolClient extends GameConnectionClient{
 	@Override
 	protected void processPacket(Object message){
 		if(message == null){
-			System.out.println("message was null");
 			return;
 		}
 		String msg = (String)message;
-
 		// seperating msg into tokens
 		String[] msgTokens = msg.split(",");
 		
@@ -117,14 +117,17 @@ public class ProtocolClient extends GameConnectionClient{
 			 * Format (createNPC,npcID,x,y,z)
 			 */
 			if(msgTokens[0].compareTo("createNPC")==0){
-				
 				UUID npcID = UUID.fromString(msgTokens[1]);
 				Vector3f ghostPosition = new Vector3f(
 					Float.parseFloat(msgTokens[2]),
 					Float.parseFloat(msgTokens[3]),
 					Float.parseFloat(msgTokens[4])
 				);
-				createGhostNPC(npcID,ghostPosition);
+				try{
+					ghostManager.createGhostNPC(npcID, ghostPosition);
+				}catch (IOException e){
+					System.out.println("error creating ghost NPC with ID: " + npcID);
+				}
 			}
 			/*
 			 * Handle rotate messages
@@ -167,6 +170,30 @@ public class ProtocolClient extends GameConnectionClient{
 				);
 
 				ghostManager.shootLaser(ghostID, cameraN, cameraV);
+			}
+			/*
+			 * Handle isNear npc check
+			 * 
+			 * Format(isNear)
+			 */
+			if(msgTokens[0].compareTo("isNear")==0){
+				sendIsNearMessage();
+			}
+			/*
+			 * Handle ghostNPC moved from server
+			 * 
+			 * Format(npcMov, npcID, x,y,z)
+			 */
+			if(msgTokens[0].compareTo("npcMov")==0){
+				UUID npcID = UUID.fromString(msgTokens[1]);
+				Vector3f pos = new Vector3f(
+					Float.parseFloat(msgTokens[2]),
+					Float.parseFloat(msgTokens[3]),
+					Float.parseFloat(msgTokens[4])
+				);
+
+				ghostManager.updateNPCLocation(npcID,pos);
+
 			}
 		}
 	}
@@ -278,7 +305,26 @@ public class ProtocolClient extends GameConnectionClient{
 			e.printStackTrace();
 		}
 	}
-	public void createGhostNPC(UUID id, Vector3f pos){
-		GhostNPC ghostNPC = new GhostNPC(id,game.getNPCObjShape(),game.getNPCTextureImage(),pos);
+	public void sendIsNearMessage(){
+		Vector<GhostNPC> NPCList = ghostManager.getNPCList();
+		GhostNPC npc;
+		Iterator<GhostNPC> it = NPCList.iterator();
+
+		while(it.hasNext()){
+			npc = it.next();
+			
+			String msg = "dist," + id.toString();
+			float distance = npc.getWorldLocation().distance(game.getAvatar().getWorldLocation());
+			if(distance < 40){
+				msg += "," + npc.getId();
+				msg += "," + distance; 
+				
+				try{
+					sendPacket(msg);
+				}catch (IOException e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

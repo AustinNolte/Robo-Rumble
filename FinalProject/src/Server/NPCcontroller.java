@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import tage.ai.behaviortrees.BTCompositeType;
+import tage.ai.behaviortrees.BTSequence;
 import tage.ai.behaviortrees.BehaviorTree;
 
 /*
@@ -18,13 +19,13 @@ public class NPCcontroller {
     private Random rand = new Random();
     private long thinkStartTime,tickStartTime,lastThinkUpdate,lastTickUpdate, currentTime;
     private float elapsedThinkMiliSec,elapsedTickMiliSec;
-    BehaviorTree bt = new BehaviorTree(BTCompositeType.SELECTOR);
     private GameServerUDP server;
+    BehaviorTree bt = new BehaviorTree(BTCompositeType.SELECTOR);
 
     // updating NPC locations
     public void updateNPCpos(){
         for(NPC npc : npcList){
-            npc.updatePosition();
+            npc.updatePosition(((currentTime/(1000000.0f)) - lastTickUpdate)*10);
         }
     }
 
@@ -91,17 +92,28 @@ public class NPCcontroller {
             if(elapsedTickMiliSec >= 25.0f){
                 lastTickUpdate = currentTime;
                 updateNPCpos();
-                //server.sendNPCInfo();
+                server.sendNPCInfo();
             }
             if(elapsedThinkMiliSec >= 250.0f){
                 lastThinkUpdate = currentTime;
-                bt.update(elapsedThinkMiliSec);
+
             }
             Thread.yield();
         }
     }
 
+    public void setDistance(UUID npcID, UUID clientID, float distance){
+        NPC npc = findNPC(npcID);
+        npc.setDistances(clientID, distance);
+
+
+
+    }
+
     public void setupBehaviorTree(){
-        
+        bt.insertAtRoot(new BTSequence(10));
+        bt.insertAtRoot(new BTSequence(20));
+
+        bt.insert(10, new AvatarNear(npcList, this, false));
     }
 }
