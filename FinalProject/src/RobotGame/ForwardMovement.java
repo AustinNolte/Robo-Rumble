@@ -29,13 +29,15 @@ public class ForwardMovement extends AbstractInputAction{
         
         if(evt.getComponent().toString().equalsIgnoreCase("W")){
             // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
+            
             forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
             angleSigned = (forwardVec.angleSigned(myGame.getAvatar().getLocalForwardVector(), new Vector3f(0,1,0)))*-time;
             oldLocVec = myGame.getAvatar().getWorldLocation();
+            
             newLocVec = (oldLocVec.add(forwardVec.mul(10*myGame.getSpeed()*time)));
             // accounting for terrain or stairs
             if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
+                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z) - myGame.getCharacterAdjust();
             }else{
                 y = oldLocVec.y;
             }
@@ -56,9 +58,11 @@ public class ForwardMovement extends AbstractInputAction{
             
             myGame.getAvatar().setLocalLocation(newLocVec);
             myGame.getAvatar().globalYaw(angleSigned*3);
-            sendRotateMessage();
-                
-            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+            
+            if(myGame.isClientConnected()){
+                sendRotateMessage();
+                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+            }
             
 
         }else if(evt.getComponent().toString().equalsIgnoreCase("S")){
@@ -70,7 +74,7 @@ public class ForwardMovement extends AbstractInputAction{
             
             // accounting for terrain or stairs
             if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
-                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
+                y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z) - myGame.getCharacterAdjust();
             }else{
                 y = oldLocVec.y;
             }
@@ -91,8 +95,10 @@ public class ForwardMovement extends AbstractInputAction{
             
             myGame.getAvatar().setLocalLocation(newLocVec);
             myGame.getAvatar().globalYaw(angleSigned*3);
-            sendRotateMessage();
-            p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+            if(myGame.isClientConnected()){
+                sendRotateMessage();
+                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+            }
             
         // deadzoning 
         }else if(evtValue > .15f || evtValue < -.15f){
@@ -105,7 +111,7 @@ public class ForwardMovement extends AbstractInputAction{
                 
                 // accounting for terrain or stairs
                 if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
+                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z) - myGame.getCharacterAdjust();
                 }else{
                     y = oldLocVec.y;
                 }
@@ -127,8 +133,10 @@ public class ForwardMovement extends AbstractInputAction{
                 newLocVec.set(newLocVec.x, y ,newLocVec.z);
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+                if(myGame.isClientConnected()){
+                    sendRotateMessage();
+                    p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+                }
             }else{
                 // based on camera heading, cross product between world up vector and cameraU gives correct forward vecotor normalize to make it constant length 1
                 forwardVec = ((new Vector3f(0,1,0)).cross(myGame.getCameraU())).normalize();
@@ -143,7 +151,7 @@ public class ForwardMovement extends AbstractInputAction{
                 newLocVec = (oldLocVec.add(forwardVec.mul(10*time*evtValue)));
                 // accounting for terrain or stairs
                 if(myGame.getTerrainHeight(newLocVec.x,newLocVec.z ) > 0.1f){
-                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z);
+                    y = myGame.getTerrainHeight(newLocVec.x,newLocVec.z) - myGame.getCharacterAdjust();
                 }else{
                     y = oldLocVec.y;
                 }
@@ -166,8 +174,10 @@ public class ForwardMovement extends AbstractInputAction{
 
                 myGame.getAvatar().setLocalLocation(newLocVec);
                 myGame.getAvatar().globalYaw(angleSigned*3);
-                sendRotateMessage();
-                p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+                if(myGame.isClientConnected()){
+                    sendRotateMessage();
+                    p.sendMoveMessage(myGame.getAvatar().getWorldLocation());
+                }
             }
         }
     }

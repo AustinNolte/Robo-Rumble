@@ -50,7 +50,7 @@ public class ProtocolClient extends GameConnectionClient{
 
 					System.out.println("join success");
 					game.setIsConnected(true);
-					sendCreateMessage(game.getAvatar().getWorldLocation());
+					sendCreateMessage(game.getAvatar().getWorldLocation(),game.getSkinOption());
 
 				}else if(msgTokens[1].compareTo("failure") == 0){
 
@@ -80,9 +80,10 @@ public class ProtocolClient extends GameConnectionClient{
 					Float.parseFloat(msgTokens[2]),
 					Float.parseFloat(msgTokens[3]),
 					Float.parseFloat(msgTokens[4]));
+				String skinOption = msgTokens[5];
 					System.out.println("Sending create message from id " + ghostID.toString());
 				try{
-					ghostManager.createGhostAvatar(ghostID, ghostPos);
+					ghostManager.createGhostAvatar(ghostID, ghostPos, skinOption);
 				} catch (IOException e){
 					System.out.println("error creating ghost avatar with ID:" + ghostID);
 				}
@@ -174,10 +175,13 @@ public class ProtocolClient extends GameConnectionClient{
 			/*
 			 * Handle isNear npc check
 			 * 
-			 * Format(isNear)
+			 * Format: (isnear,npcID,value)
 			 */
-			if(msgTokens[0].compareTo("isNear")==0){
-				sendIsNearMessage();
+			if(msgTokens[0].compareTo("isnear")==0){
+				UUID npcID = UUID.fromString(msgTokens[1]);
+				float x = Float.parseFloat(msgTokens[2]);
+				float z = Float.parseFloat(msgTokens[3]);
+				sendIsNearMessage(x,z);
 			}
 			/*
 			 * Handle ghostNPC moved from server
@@ -194,6 +198,50 @@ public class ProtocolClient extends GameConnectionClient{
 
 				ghostManager.updateNPCLocation(npcID,pos);
 
+			}
+			/*
+			 * Handles incoming deadMessage
+			 * Format(dead,localGhostID)
+			 */
+			if(msgTokens[0].compareTo("dead")==0){
+				UUID ghostID = UUID.fromString(msgTokens[1]);
+				ghostManager.handleDeadMessage(ghostID);
+			}
+			/*
+			 * Handles start animation message
+			 * Format(startAnimate,localGhostID)
+			 */
+			if(msgTokens[0].compareTo("startAnimate")==0){
+				UUID ghostID = UUID.fromString(msgTokens[1]);
+				ghostManager.startAnimation(ghostID);
+			}
+			/*
+			 * Handles stop animation message
+			 * Format(stopAnimate,localGhostId)
+			 */
+			if(msgTokens[0].compareTo("stopAnimate")==0){
+				UUID ghostID = UUID.fromString(msgTokens[1]);
+				ghostManager.stopAnimation(ghostID);
+			}
+			/*
+			 * Handles look at message for npc
+			 * Format(lookAt,clientIDtoLookAt,npcID)
+			 */
+			if(msgTokens[0].compareTo("lookAt")==0){
+				UUID ghostID = UUID.fromString(msgTokens[1]);
+				UUID npcID = UUID.fromString(msgTokens[2]);
+				if(ghostManager.findAvatar(ghostID) != null){
+					ghostManager.updateNpcRoation(npcID,game.getAvatar().getWorldLocation());
+				}else if(ghostManager.findAvatar(ghostID) == null){
+					ghostManager.updateNpcRoation(npcID,game.getAvatar().getWorldLocation());
+				}
+			}
+			/*
+			 * Handles npc shoot message
+			 * Format(npcShoot)
+			 */
+			if(msgTokens[0].compareTo("npcShoot")==0){
+				ghostManager.npcShootLaser();
 			}
 		}
 	}
@@ -213,15 +261,16 @@ public class ProtocolClient extends GameConnectionClient{
 
 	/*
 	 * Lets server know of clients position and the server will distrubute that information to all other clients
-	 * Format: (create,localGhostID,x,y,z)
+	 * Format: (create,localGhostID,x,y,z,skinOption)
 	 */
 
-	public void sendCreateMessage(Vector3f position){
+	public void sendCreateMessage(Vector3f position, String skinOption){
 		try{
 			String msg = "create," + id.toString();
 			msg += "," + position.x();
 			msg += "," + position.y();
 			msg += "," + position.z();
+			msg += "," + skinOption;
 		
 			sendPacket(msg);
 
@@ -241,6 +290,7 @@ public class ProtocolClient extends GameConnectionClient{
 			msg += "," + position.x();
 			msg += "," + position.y();
 			msg += "," + position.z();
+			msg += "," + game.getSkinOption();
 		
 			sendPacket(msg);
 		} catch(IOException e){
@@ -262,6 +312,18 @@ public class ProtocolClient extends GameConnectionClient{
 		
 			sendPacket(msg);
 		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	/*
+	 * Informs server that client avatar is leaving server.
+	 * Format(leave,ghostId)
+	 */
+	public void sendLeaveMessage(){
+		try{
+			String msg = "leave," + id.toString();
+			sendPacket(msg);
+		}catch (IOException e){
 			e.printStackTrace();
 		}
 	}
@@ -305,26 +367,58 @@ public class ProtocolClient extends GameConnectionClient{
 			e.printStackTrace();
 		}
 	}
-	public void sendIsNearMessage(){
-		Vector<GhostNPC> NPCList = ghostManager.getNPCList();
-		GhostNPC npc;
-		Iterator<GhostNPC> it = NPCList.iterator();
 
-		while(it.hasNext()){
-			npc = it.next();
-			
-			String msg = "dist," + id.toString();
-			float distance = npc.getWorldLocation().distance(game.getAvatar().getWorldLocation());
-			if(distance < 40){
-				msg += "," + npc.getId();
-				msg += "," + distance; 
-				
-				try{
-					sendPacket(msg);
-				}catch (IOException e){
-					e.printStackTrace();
-				}
-			}
+	/*
+	 * Informs server that client has started animation
+	 * Format(startAnimate,localGhostID)
+	 */
+	public void sendAnimateMessage(){
+		try{
+			String msg = "startAnimate," + id.toString();
+			sendPacket(msg);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * Inform server that client has stopped animtion
+	 * Format(stopAnimate,localGhostID)
+	 */
+	public void sendStopAnimateMessage(){
+		try{
+			String msg = "stopAnimate," + id.toString();
+			sendPacket(msg);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	/*
+	 * Informs server you have died fom taking too much damage
+	 * Format: (dead,localGhostID)
+	 * 
+	 */
+	public void sendDeadMessage(){
+		try{
+			String msg = "dead," +  id.toString();
+			sendPacket(msg);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	public void sendIsNearMessage(float x,float z){
+		GhostNPC npc = ghostManager.getGhostNPC();
+		String msg = "isnear," + id.toString();
+		float distance = npc.getWorldLocation().distance(game.getAvatar().getWorldLocation());
+		if(distance <= 40){
+			msg += ",true";
+		}else{
+			msg+= ",false";
+		} 			
+		try{
+			sendPacket(msg);
+		}catch (IOException e){
+			e.printStackTrace();
 		}
 	}
 }

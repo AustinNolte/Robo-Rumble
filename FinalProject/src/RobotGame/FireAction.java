@@ -69,7 +69,13 @@ public class FireAction extends AbstractInputAction{
             game.getEngine().getSceneGraph().addNodeController(lbCont);
             lbCont.addTarget(laser);
             lbCont.enable();
-            sendFireMessage();
+            if(game.isClientConnected()){
+
+                sendFireMessage();
+            }
+
+            game.getLaserSound().setLocation(game.getAvatar().getWorldLocation());
+            game.getLaserSound().play();
             
         }
     }

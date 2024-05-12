@@ -58,6 +58,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				System.out.println("Leave request from - " + clientID.toString());
 				sendLeaveMessages(clientID);
 				removeClient(clientID);
+				System.out.println("removed");
 			}
 
 			/*
@@ -67,7 +68,8 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			if(msgTokens[0].compareTo("create") == 0){
 				UUID clientID = UUID.fromString(msgTokens[1]);
 				String[] pos = {msgTokens[2],msgTokens[3],msgTokens[4]};
-				sendCreateMessages(clientID, pos);
+				String skinOption = msgTokens[5];
+				sendCreateMessages(clientID, pos,skinOption);
 				sendWantsDetailsMessages(clientID);
 			}
 
@@ -79,7 +81,8 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				UUID clientID = UUID.fromString(msgTokens[1]);
 				UUID remoteID = UUID.fromString(msgTokens[2]);
 				String[] pos = {msgTokens[3],msgTokens[4],msgTokens[5]};
-				sendDetailsForMessage(clientID, remoteID, pos);
+				String skinOption = msgTokens[6];
+				sendDetailsForMessage(clientID, remoteID, pos, skinOption);
 			}
 
 			/*
@@ -114,13 +117,42 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			/*
 			 * handle near msg -- server receives near msg from client if they are close to an npc
 			 * 
-			 * Coming in format: (dist,localghostID,npcID,distance(float))
+			 * Coming in format: (isnear,clientID,value)
 			 */
-			if(msgTokens[0].compareTo("dist")==0){
+			if(msgTokens[0].compareTo("isnear")==0){
 				UUID clientID = UUID.fromString(msgTokens[1]);
-				UUID npcID = UUID.fromString(msgTokens[2]);
-				float distance = Float.parseFloat(msgTokens[3]);
-				npcCon.setDistance(npcID, clientID, distance);
+				if(msgTokens[2].compareToIgnoreCase("false")==0){
+					npcCon.setIsNear(false,clientID);
+				}else if(msgTokens[2].compareToIgnoreCase("true")==0){
+					npcCon.setIsNear(true,clientID);
+				}
+			}
+			/*
+			 * Handle incoming dead message -- server recieves message that a client has died in their game
+			 * 
+			 * Coming in format: (dead,localGhostID)
+			 */
+			if(msgTokens[0].compareTo("dead")==0){
+				UUID clientID = UUID.fromString(msgTokens[1]);
+				sendDeadMessage(clientID);
+			}
+			/*
+			 * Handle incoming animate message -- server recieves message that client has started animating their player character
+			 * 
+			 * Coming in format: (startAnimate,localGhostID)
+			 */
+			if(msgTokens[0].compareTo("startAnimate")==0){
+				UUID clientID = UUID.fromString(msgTokens[1]);
+				sendAnimateMessage(clientID);
+			}
+			/*
+			 * Handle incoming stop animate message -- server recieves message that client has stopped animating their player character
+			 * 
+			 * Coming in format: (stopAnimate,localGhostID)
+			 */
+			if(msgTokens[0].compareTo("stopAnimate")==0){
+				UUID clientID = UUID.fromString(msgTokens[1]);
+				sendStopAnimateMessage(clientID);
 			}
 		}
 	}
@@ -164,12 +196,13 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	 * Format (create,remoteID,x,y,z)
 	 */
 
-	public void sendCreateMessages(UUID clientID, String[] pos){
+	public void sendCreateMessages(UUID clientID, String[] pos, String skinOption){
 		try{
 			String msg = "create," + clientID.toString();
 			msg += "," + pos[0];
 			msg += "," + pos[1];
 			msg += "," + pos[2];
+			msg += "," + skinOption;
 
 			forwardPacketToAll(msg, clientID);
 
@@ -183,12 +216,13 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	 * Format: (create,remoteID,x,y,z)
 	 */
 	
-	public void sendDetailsForMessage(UUID clientID, UUID remoteID, String[] pos){
+	public void sendDetailsForMessage(UUID clientID, UUID remoteID, String[] pos, String skinOption){
 		try{
 			String msg = "dsfr," + remoteID.toString();
 			msg += "," + pos[0];
 			msg += "," + pos[1];
 			msg += "," + pos[2];
+			msg += "," + skinOption;
 			sendPacket(msg, clientID);
 		} catch (IOException e){
 			e.printStackTrace();
@@ -268,6 +302,43 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 		}
 	}
 
+	/*
+	 * lets other clients know that another player has started animating their avatar
+	 * format: (startAnimate,clientID)
+	 */
+	public void sendAnimateMessage(UUID clientID){
+		try{
+			String msg = "startAnimate," + clientID.toString();
+			forwardPacketToAll(msg, clientID);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+/*
+	 * lets other clients know that another player has stopped  animating their avatar
+	 * format: (startAnimate,clientID)
+	 */
+	public void sendStopAnimateMessage(UUID clientID){
+		try{
+			String msg = "stopAnimate," + clientID.toString();
+			forwardPacketToAll(msg, clientID);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	/*
+	 * lets other clients know that another player has died in game
+	 * format: (dead,localGhostId)
+	 */
+	public void sendDeadMessage(UUID clientID){
+		try{
+			String msg = "dead," + clientID.toString();
+			forwardPacketToAll(msg, clientID);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+
 	// ----------------- NPC SECTION ---------------------- //
 
 
@@ -276,21 +347,15 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	 * format: (createNPC, npcID, x, y, z)
 	 */
 	public void sendCreateNPCMsg(UUID clientID){
-		ArrayList<NPC> npcList = npcCon.getNPCList();
-		Iterator<NPC> it = npcList.iterator();
-		NPC npc;
-		while(it.hasNext()){
-			npc = it.next();
-			try{
-				String msg = "createNPC," + npc.getId();
-				msg += "," + npc.getX();
-				msg += "," + npc.getY();
-				msg += "," + npc.getZ();
-				sendPacket(msg, clientID);
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-
+		NPC npc = npcCon.getNpc();
+		try{
+			String msg = "createNPC," + npc.getId();
+			msg += "," + npc.getX();
+			msg += "," + npc.getY();
+			msg += "," + npc.getZ();
+			sendPacket(msg, clientID);
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 	/*
@@ -298,16 +363,57 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	 * format: (npcMov,npcID,x,y,z)
 	 */
 	public void sendNPCInfo(){
-		for(NPC npc: npcCon.getNPCList()){
-			try{
-				String msg = "npcMov," + npc.getId();
-				msg += "," + npc.getX();
-				msg += "," + npc.getY();
-				msg += "," + npc.getZ();
-				sendPacketToAll(msg);
-			}catch(IOException e){
-				e.printStackTrace();
-			}
+		NPC npc = npcCon.getNpc();	
+		try{
+			String msg = "npcMov," + npc.getId();
+			msg += "," + npc.getX();
+			msg += "," + npc.getY();
+			msg += "," + npc.getZ();
+			sendPacketToAll(msg);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	/*
+	 * Handles when server needs to know if a player is within chasing distance of NPC
+	 * format (isnear,npcid,x,z)
+	 */
+
+	public void sendCheckForAvatar(){
+		NPC npc = npcCon.getNpc();
+		try{
+			String msg = "isnear," + npc.getId();
+			msg += "," + npc.getX();
+			msg += "," + npc.getZ();
+			sendPacketToAll(msg);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * Handles look at message for NPC to look at player within range
+	 * format(lookAt,clientID,npcID)
+	 */
+	public void sendLookAtMessage(UUID clientID){
+		String msg = "lookAt," + clientID.toString() + "," +  npcCon.getNpc().getId().toString();
+		try{
+			sendPacketToAll(msg);
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * Handles npc shoot message request in ai
+	 * format(npcShoot)
+	 */
+	public void npcShootLaser(){
+		String msg = "npcShoot";
+		try{
+			sendPacketToAll(msg);
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

@@ -9,18 +9,21 @@ import tage.ai.behaviortrees.BTCondition;
 public class AvatarNear extends BTCondition{
 
 
-    private ArrayList<NPC> npcList;
+    private NPC npc;
     private NPCcontroller npcCon;
+    private GameServerUDP server;
 
-    public AvatarNear(ArrayList<NPC> npcList,NPCcontroller npcCon,boolean toNegate) {
+    public AvatarNear(GameServerUDP server, NPC npc,NPCcontroller npcCon,boolean toNegate) {
         super(toNegate);
-        this.npcList = npcList;
+        this.npc = npc;
         this.npcCon = npcCon;
+        this.server = server;
     }
 
     @Override
     protected boolean check() {
-        return true;
+        server.sendCheckForAvatar();
+        return npcCon.isNear();
     }
     
 }
