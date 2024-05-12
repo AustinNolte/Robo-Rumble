@@ -817,17 +817,29 @@ public class MyGame extends VariableFrameRateGame{
             tempTransform = toDoubleArray(physicsMatrix.get(vals));
             pAvObj.getPhysicsObject().setTransform(tempTransform);
             // this is purely for updating laser positioning based on phyiscs objects movement
+            if(!isSinglePlayer){
             for(GameObject go: engine.getSceneGraph().getGameObjects()){
-                if(gm.getGhostNPC() == null){
-                    if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj &&  go.getPhysicsObject() != null){
-                        mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
-                        mat2.set(3,0,mat.m30());
-                        mat2.set(3,1,mat.m31());
-                        mat2.set(3,2,mat.m32());
-                        go.setLocalTranslation(mat2);
+                    if(gm.getGhostNPC() == null){
+                        if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj &&  go.getPhysicsObject() != null){
+                            mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+                            mat2.set(3,0,mat.m30());
+                            mat2.set(3,1,mat.m31());
+                            mat2.set(3,2,mat.m32());
+                            go.setLocalTranslation(mat2);
+                        }
+                    }else if (gm.getGhostNPC() != null){
+                        if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj &&  go.getPhysicsObject() != null && go != gm.getNPCList().get(0)){
+                            mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+                            mat2.set(3,0,mat.m30());
+                            mat2.set(3,1,mat.m31());
+                            mat2.set(3,2,mat.m32());
+                            go.setLocalTranslation(mat2);
+                        }
                     }
-                }else if (gm.getGhostNPC() != null){
-                    if(go != pAvObj && go != ghostAvObj && go != groundPlaneObj &&  go.getPhysicsObject() != null && go != gm.getNPCList().get(0)){
+                }
+            }else if(isSinglePlayer){
+                for(GameObject go: engine.getSceneGraph().getGameObjects()){
+                    if(go != pAvObj && go != groundPlaneObj &&  go.getPhysicsObject() != null){
                         mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
                         mat2.set(3,0,mat.m30());
                         mat2.set(3,1,mat.m31());
@@ -1121,19 +1133,21 @@ public class MyGame extends VariableFrameRateGame{
             for(int j =0; j<manifold.getNumContacts(); j++){
                 contactPoint = manifold.getContactPoint(j);
                 if(contactPoint.getDistance() < 0.0f){
-                    if(obj1 == pPhysicsObj && (obj2 != gm.getGhostPhysicsObject() && obj2 != groundPlanePhysicsObj)){
-                        // this means that a laser collided with the avatar or the npcs did, therefore reduce health
-                        pAvObj.setHealth((float)(pAvObj.getHealth()-5f));
-                        if(pAvObj.getHealth() <= 0){
-                            deathSound.setLocation(pAvObj.getWorldLocation());
-                            deathSound.play(5,true);
-                            if(isClientConnected){
-                                protClient.sendDeadMessage();
-                                protClient.sendLeaveMessage();
+                    if(!isSinglePlayer){
+                        if(obj1 == pPhysicsObj && (obj2 != gm.getGhostPhysicsObject() && obj2 != groundPlanePhysicsObj)){
+                            // this means that a laser collided with the avatar or the npcs did, therefore reduce health
+                            pAvObj.setHealth((float)(pAvObj.getHealth()-5f));
+                            if(pAvObj.getHealth() <= 0){
+                                deathSound.setLocation(pAvObj.getWorldLocation());
+                                deathSound.play(5,true);
+                                if(isClientConnected){
+                                    protClient.sendDeadMessage();
+                                    protClient.sendLeaveMessage();
+                                }
+                                isSinglePlayer = true;
+                                isClientConnected = false;
+                                isDead = true;
                             }
-                            isSinglePlayer = true;
-                            isClientConnected = false;
-                            isDead = true;
                         }
                     }
                     break;
