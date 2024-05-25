@@ -76,7 +76,7 @@ public class FireAction extends AbstractInputAction{
 
             game.getLaserSound().setLocation(game.getAvatar().getWorldLocation());
             game.getLaserSound().play();
-            
+       
         }
     }
 

@@ -5,12 +5,16 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.UUID;
 
+import tage.ai.behaviortrees.AvatarNear;
 import tage.ai.behaviortrees.BTCompositeType;
 import tage.ai.behaviortrees.BTSequence;
 import tage.ai.behaviortrees.BehaviorTree;
+import tage.ai.behaviortrees.NPCRotate;
+import tage.ai.behaviortrees.NPCShoot;
+import tage.ai.behaviortrees.WaitTime;
 
 /*
- * Controller for boid type npc enemies, resides on server side.
+ * Controller for a single sentinel npc enemy, resides on server side.
  */
 public class NPCcontroller {
 
@@ -25,13 +29,8 @@ public class NPCcontroller {
     private boolean isNear;
     private UUID clientIDNear;
 
-    // updating NPC locations
-    public void updateNPCpos(){
-        npc.updatePosition(((currentTime/(1000000.0f)) - lastTickUpdate)*10);
-    }
-
-    // start method for NPC logic, amount is for the amount of boid enemies
-    public void start(GameServerUDP server, int amount){
+    //** Starts logic of npcContrller, sets up the one npc */
+    public void start(GameServerUDP server){
         this.server = server;
         thinkStartTime = System.nanoTime();
         tickStartTime = System.nanoTime();
@@ -45,7 +44,7 @@ public class NPCcontroller {
 
     }
 
-    // setting up the given amount of NPCs
+    //** sets up one npc in a random location */
     public void setupNPC(){
         float x,z;
         int randomI,randomI2;
@@ -63,11 +62,11 @@ public class NPCcontroller {
         }
         npc = new NPC(x,z);
     }
-
+    //** gets the npc */
     public NPC getNpc(){
         return npc;
-    }
-
+    } 
+    /** npc think and tick loop */
     public void npcLoop(){
         while(true){
             currentTime = System.nanoTime();
@@ -87,20 +86,20 @@ public class NPCcontroller {
             Thread.yield();
         }
     }
-
+    //** gets clientID that is near the NPC */
     public UUID getClientNearID(){
         return clientIDNear;
     }
-    
+    //** sets the near flag and which client is near it */
     public void setIsNear(boolean isNear,UUID clientID){
         this.isNear = isNear;
         clientIDNear = clientID;
     }
-
+    //** get near flag */
     public boolean isNear(){
         return isNear;
     }
-
+    /** sets up behavior tree for npc logic*/
     public void setupBehaviorTree(){
         bt.insertAtRoot(new BTSequence(10));
         bt.insert(10,new AvatarNear(server, npc, this,false));

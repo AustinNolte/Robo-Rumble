@@ -28,7 +28,7 @@ import Server.NPC;
 public class MyGame extends VariableFrameRateGame{
 
     //object notation [...]Obj, shape notation [...]S, texture notation [...]X, only one animated shape so it is just pAS for player Animated Shape
-    private ObjShape xAxisS,yAxisS,zAxisS,groundPlaneS,laserBeamS, fenceS, largeBoxS, wideBoxS, smallBoxS, npcS, myHouseS,myLampPostS;
+    private ObjShape groundPlaneS,laserBeamS, fenceS, largeBoxS, wideBoxS, smallBoxS, npcS, myHouseS,myLampPostS;
     private GameObject ghostAvObj,xAxisObj,yAxisObj,zAxisObj,groundPlaneObj, myHouse, myLampPost1, myLampPost2, myLampPost3, myLampPost4, npcObj; 
     private PlayerCharacter pAvObj;
     private GameObject largeBox1, largeBox2, largeBox3, largeBox4, largeBox5;
@@ -135,7 +135,7 @@ public class MyGame extends VariableFrameRateGame{
     
     @Override
     public void loadSkyBoxes(){
-        customSkyBox = (engine.getSceneGraph()).loadCubeMap("customSkybox1");
+        customSkyBox = (engine.getSceneGraph()).loadCubeMap("customSkybox");
         (engine.getSceneGraph()).setActiveSkyBoxTexture(customSkyBox);
         (engine.getSceneGraph()).setSkyBoxEnabled(true);
     }
@@ -187,15 +187,11 @@ public class MyGame extends VariableFrameRateGame{
 
     @Override
     public void loadShapes() {
-        pAS = new AnimatedShape("robotMeshTest.rkm", "robotSkeletonTest.rks");
-        pAS.loadAnimation("WALK", "ForwardWalkTest.rka");
+        pAS = new AnimatedShape("robotMesh.rkm", "robotSkeleton.rks");
+        pAS.loadAnimation("WALK", "ForwardWalk.rka");
 
         gAS = new AnimatedShape("robotMesh.rkm", "robotSkeleton.rks");
-        gAS.loadAnimation("WALK", "ForwardWalkTest.rka");
-
-        xAxisS = new Line(new Vector3f(0,0,0), new Vector3f(10,0,0));
-        yAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,10,0));
-        zAxisS = new Line(new Vector3f(0,0,0), new Vector3f(0,0,10));  
+        gAS.loadAnimation("WALK", "ForwardWalk.rka");
         groundPlaneS = new TerrainPlane(1000);   
 
         npcS = new ImportedModel("siege-ballista.obj");
@@ -249,17 +245,6 @@ public class MyGame extends VariableFrameRateGame{
         myHouse.setLocalTranslation(initTranslation);
         myHouse.setLocalScale(initScale);
         myHouse.getRenderStates().setModelOrientationCorrection(new Matrix4f().rotateX((float)Math.toRadians(90)));
-
-        //making x,y,z axis
-		xAxisObj = new GameObject(GameObject.root(),xAxisS);
-        xAxisObj.getRenderStates().setColor(new Vector3f(1,0,0));
-
-        
-		yAxisObj = new GameObject(GameObject.root(),yAxisS);
-		yAxisObj.getRenderStates().setColor(new Vector3f(0,1,0));
-        
-		zAxisObj = new GameObject(GameObject.root(),zAxisS);
-		zAxisObj.getRenderStates().setColor(new Vector3f(0,0,1));
         
         //making player obj
         if(option.compareToIgnoreCase("blue")== 0){

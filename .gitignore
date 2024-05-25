@@ -30,8 +30,10 @@ replay_pid*
 *.tgd
 
 /FinalProject/src/tage/*
+/FinalProject/src/javadoc/*
 /FinalProject/bin/*
 /FinalProject/src/assets/*
 /FinalProject/src/Server/tage/*
 .vscode/settings.json
 skybox1.tgd_bak
+/deliverable/*

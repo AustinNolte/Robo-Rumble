@@ -1,6 +1,7 @@
 package Server;
 
 import java.io.IOException;
+
 import tage.networking.IGameConnection.ProtocolType;
 
 public class NetworkingServer 
@@ -17,7 +18,7 @@ public class NetworkingServer
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}
-		npcCon.start(thisUDPServer, 2);
+		npcCon.start(thisUDPServer);
 	}
 
 	public static void main(String[] args) {	
