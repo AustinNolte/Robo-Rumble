@@ -22,18 +22,3 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
-
-# running files
-*.bat
-
-# terragen files
-*.tgd
-
-/FinalProject/src/tage/*
-/FinalProject/src/javadoc/*
-/FinalProject/bin/*
-/FinalProject/src/assets/*
-/FinalProject/src/Server/tage/*
-.vscode/settings.json
-skybox1.tgd_bak
-/deliverable/*
